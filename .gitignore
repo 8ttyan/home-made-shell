@@ -35,4 +35,6 @@
 *.un~
 *.swp
 
+# build
 /build
+/hsh
