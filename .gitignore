@@ -31,4 +31,8 @@
 *.out
 *.app
 
+# Vim workfiles
+*.un~
+*.swp
+
 /build
