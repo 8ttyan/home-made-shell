@@ -4,6 +4,8 @@
 #include <sys/wait.h>
 #include <string.h>
 
+#include "process.h"
+
 void trim(char str[])
 {
 	for (int i=0; i<1024; i++) {
@@ -24,24 +26,9 @@ int main()
 		if ( strcmp(str,"exit")==0 ) {
 			break;
 		}
-		//puts(str);
-		pid_t pid = fork();
-		if ( pid<0 ) {	// error
-			puts("fork error");
-			continue;
-		} else if ( pid==0 ) {	// child process
-			//puts("child process");
-			//puts("exec");
-			execlp(str,str,NULL);
-			//puts("exec error");
-			continue;	// error of exec
-		} else {	// shell (parent process)
-			//printf("child = %d\n", pid);
-			int status=0;
-			//puts("wait");
-			waitpid(pid, &status, 0);
-			//puts("end");
-		}
+		Process myProcess(str);
+		myProcess.forkExec();
+		myProcess.wait();
 	}
 	return 0;
 }
