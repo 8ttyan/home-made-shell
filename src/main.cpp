@@ -20,12 +20,13 @@ int main()
 {
 	char str[1024];
 	while (1) {
-		printf("$");
+		printf("home-made-shell> ");
 		if ( fgets(str,1024,stdin)==NULL ) break;
 		trim(str);
 		if ( strcmp(str,"exit")==0 ) {
 			break;
 		}
+		if ( strlen(str)==0 ) continue;
 		Process myProcess(str);
 		myProcess.forkExec();
 		myProcess.wait();
