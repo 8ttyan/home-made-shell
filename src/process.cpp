@@ -3,12 +3,21 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <sstream>
 #include "process.h"
 
 Process::Process(const char* pCommand)
-:mCommand(pCommand)
-, mPid(0)
+: mPid(0)
 {
+	string cmdStr(pCommand);
+	istringstream iss(cmdStr);
+	string s;
+	iss >> s;
+	mCommand = s;
+	mArguments.push_back(s);
+	while ( iss >> s ) {
+		mArguments.push_back(s);
+	}
 }
 
 void Process::forkExec()
@@ -19,7 +28,16 @@ void Process::forkExec()
 		return;
 	}
 	if ( pid==0 ) {	// child process
-		execlp(mCommand.c_str(),mCommand.c_str(),NULL);
+		char** argList = new char*[mArguments.size()+1];
+		for (size_t i=0; i<mArguments.size(); i++) {
+			const string& argStr=mArguments[i];
+			char* argChar = new char[argStr.size()+1];
+			memcpy(argChar, argStr.c_str(), argStr.size()+1);
+			argList[i]=argChar;
+		}
+		argList[mArguments.size()]=NULL;
+		//execlp(mCommand.c_str(),mCommand.c_str(),NULL);
+		execvp(mCommand.c_str(),argList);
 		return;
 	}
 	mPid = pid;
