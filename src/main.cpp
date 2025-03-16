@@ -29,6 +29,11 @@ int main()
 		if ( strlen(str)==0 ) continue;
 		Process myProcess(str);
 		myProcess.forkExec();
+		while (1) {
+			string str=myProcess.readStdout();
+			if ( str.empty() ) break;
+			printf("%s",str.c_str());
+		}
 		myProcess.wait();
 	}
 	return 0;
