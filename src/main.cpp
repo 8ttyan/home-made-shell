@@ -30,9 +30,11 @@ int main()
 		Process myProcess(str);
 		myProcess.forkExec();
 		while (1) {
-			string str=myProcess.readStdout();
-			if ( str.empty() ) break;
-			printf("%s",str.c_str());
+			string str1=myProcess.readStdout();
+			string str2=myProcess.readStderr();
+			if ( str1.empty()==false ) fprintf(stdout,"%s",str1.c_str());
+			if ( str2.empty()==false ) fprintf(stderr,"%s",str2.c_str());
+			if ( str1.empty() && str2.empty() ) break;
 		}
 		myProcess.wait();
 	}

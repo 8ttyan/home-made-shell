@@ -103,6 +103,10 @@ string Process::readStdout() const
 {
 	return readFp(mStdoutFp);
 }
+string Process::readStderr() const
+{
+	return readFp(mStderrFp);
+}
 
 string Process::readFp(FILE* pFp) const
 {

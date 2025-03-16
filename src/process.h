@@ -14,6 +14,7 @@ public:
 	int wait();
 	int getPid() const;
 	string readStdout() const;
+	string readStderr() const;
 
 private:
 	char** argumentsAsChars() const;
