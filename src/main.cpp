@@ -3,8 +3,10 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <list>
 
 #include "process.h"
+#include "tokenizer.h"
 
 void trim(char str[])
 {
@@ -27,16 +29,22 @@ int main()
 			break;
 		}
 		if ( strlen(str)==0 ) continue;
-		Process myProcess(str);
-		myProcess.forkExec();
-		while (1) {
-			string str1=myProcess.readStdout();
-			string str2=myProcess.readStderr();
-			if ( str1.empty()==false ) fprintf(stdout,"%s",str1.c_str());
-			if ( str2.empty()==false ) fprintf(stderr,"%s",str2.c_str());
-			if ( str1.empty() && str2.empty() ) break;
+		list<Process> procList;
+		Tokenizer tokenWithPipe(str,"|");
+		string command;
+		while ( tokenWithPipe >> command ) {
+			Process myProcess(command);
+			if ( procList.size()>0 ) {
+				procList.back().connectByPipe(myProcess);
+			}
+			procList.push_back(myProcess);
 		}
-		myProcess.wait();
+		for (auto& proc : procList) {
+			proc.forkExec();
+		}
+		for (auto& proc : procList) {
+			proc.wait();
+		}
 	}
 	return 0;
 }

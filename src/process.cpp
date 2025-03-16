@@ -5,31 +5,27 @@
 #include <string.h>
 #include <sstream>
 #include "process.h"
+#include "tokenizer.h"
 
-Process::Process(const char* pCommand)
+Process::Process(const string& pCommand)
 : mPid(-1)
-, mStdinFd(-1)
-, mStdoutFd(-1)
-, mStderrFd(-1)
-, mStdoutFp(NULL)
-, mStderrFp(NULL)
+, mStdinFd(STDIN_FILENO)
+, mStdoutFd(STDOUT_FILENO)
+, mStderrFd(STDERR_FILENO)
 {
-	string cmdStr(pCommand);
-	istringstream iss(cmdStr);
+//	printf("Process %s\n", pCommand.c_str());
+	Tokenizer tokens(pCommand, " ");
 	string s;
-	iss >> s;
+	tokens >> s;
 	mCommand = s;
 	mArguments.push_back(s);
-	while ( iss >> s ) {
+	while ( tokens >> s ) {
 		mArguments.push_back(s);
 	}
 }
 
 Process::~Process()
 {
-	if ( mStdinFd!=-1 ) close(mStdinFd);
-	if ( mStdoutFd!=-1 ) close(mStdoutFd);
-	if ( mStderrFd!=-1 ) close(mStderrFd);
 }
 
 // The system-call pipe(int fd[2]) return two file descriptors.
@@ -37,40 +33,51 @@ Process::~Process()
 #define PIPE_READING 0
 #define PIPE_WRITING 1
 
+void Process::connectByPipe(Process& pNextProcess)
+{
+	int fd[2];
+	if ( pipe(fd)!=0 ) {
+		printf("failed to create pipe\n");
+	}
+	mStdoutFd = fd[PIPE_WRITING];
+	pNextProcess.mStdinFd = fd[PIPE_READING];
+}
+
 void Process::forkExec()
 {
-	// preparing file-descriptor before fork
-	int stdinFd[2], stdoutFd[2], stderrFd[2];
-	pipe(stdinFd);
-	pipe(stdoutFd);
-	pipe(stderrFd);
-
+//	printf("start %s\n",mCommand.c_str());
 	pid_t pid = fork();
 	if ( pid<0 ) {	// fork error
 		printf("failed to exec process %s\n", mCommand.c_str());
 	} else if ( pid>0 ) {	// parent process
 		mPid = pid;
-		close(stdinFd[PIPE_READING]);
-		close(stdoutFd[PIPE_WRITING]);
-		close(stderrFd[PIPE_WRITING]);
-		mStdinFd = stdinFd[PIPE_WRITING];
-		mStdoutFd = stdoutFd[PIPE_READING];
-		mStderrFd = stderrFd[PIPE_READING];
-		mStdoutFp = fdopen(mStdoutFd,"r");
-		mStderrFp = fdopen(mStderrFd,"r");
-		if ( mStdoutFp==NULL ) printf("Cannot relate mStdoutFd to mstdoutFp\n");
-		if ( mStderrFp==NULL ) printf("Cannot relate mStdoutFd to mstderrFp\n");
+		if ( mStdinFd!=STDIN_FILENO ) close(mStdinFd);
+		if ( mStdoutFd!=STDOUT_FILENO ) close(mStdoutFd);
+		if ( mStderrFd!=STDERR_FILENO ) close(mStderrFd);
 	} else {				// child process
-		close(stdinFd[PIPE_WRITING]);
-		close(stdoutFd[PIPE_READING]);
-		close(stderrFd[PIPE_READING]);
 		// connect pipe
-		close(STDIN_FILENO);  dup2(stdinFd[PIPE_READING],STDIN_FILENO);   close(stdinFd[PIPE_READING]);
-		close(STDOUT_FILENO); dup2(stdoutFd[PIPE_WRITING],STDOUT_FILENO); close(stdoutFd[PIPE_WRITING]);
-		close(STDERR_FILENO); dup2(stderrFd[PIPE_WRITING],STDERR_FILENO); close(stderrFd[PIPE_WRITING]);
+		if ( mStdinFd!=STDIN_FILENO ) {
+			//printf("%s: change stdin\n", mCommand.c_str());
+			close(STDIN_FILENO);
+			dup2(mStdinFd,STDIN_FILENO);
+			close(mStdinFd);
+		}
+		if ( mStdoutFd!=STDOUT_FILENO ) {
+			//printf("%s: change stdout\n", mCommand.c_str());
+			close(STDOUT_FILENO);
+			dup2(mStdoutFd,STDOUT_FILENO);
+			close(mStdoutFd);
+		}
+		if ( mStderrFd!=STDERR_FILENO ) {
+			close(STDERR_FILENO);
+			dup2(mStderrFd,STDERR_FILENO);
+			close(mStderrFd);
+		}
 
 		char** argList = argumentsAsChars();
 		execvp(mCommand.c_str(),argList);
+		printf("Failed to exec %s\n", mCommand.c_str());
+		exit(0);
 	}
 }
 
@@ -97,23 +104,5 @@ int Process::wait()
 int Process::getPid() const
 {
 	return mPid;
-}
-
-string Process::readStdout() const
-{
-	return readFp(mStdoutFp);
-}
-string Process::readStderr() const
-{
-	return readFp(mStderrFp);
-}
-
-string Process::readFp(FILE* pFp) const
-{
-	char buf[1024];
-	buf[0] = '\0';
-	if ( fgets(buf,1024,pFp)==NULL ) return string();
-	string str(buf);
-	return str;
 }
 
