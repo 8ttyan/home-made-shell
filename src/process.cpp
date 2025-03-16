@@ -7,7 +7,7 @@
 #include "process.h"
 
 Process::Process(const char* pCommand)
-: mPid(0)
+: mPid(-1)
 {
 	string cmdStr(pCommand);
 	istringstream iss(cmdStr);
@@ -27,20 +27,27 @@ void Process::forkExec()
 		printf("failed to exec process %s\n", mCommand.c_str());
 		return;
 	}
-	if ( pid==0 ) {	// child process
-		char** argList = new char*[mArguments.size()+1];
-		for (size_t i=0; i<mArguments.size(); i++) {
-			const string& argStr=mArguments[i];
-			char* argChar = new char[argStr.size()+1];
-			memcpy(argChar, argStr.c_str(), argStr.size()+1);
-			argList[i]=argChar;
-		}
-		argList[mArguments.size()]=NULL;
-		//execlp(mCommand.c_str(),mCommand.c_str(),NULL);
-		execvp(mCommand.c_str(),argList);
+	if ( pid>0 ) {	// parent process
+		mPid = pid;
 		return;
 	}
-	mPid = pid;
+	// child process
+	char** argList = argumentsAsChars();
+	execvp(mCommand.c_str(),argList);
+	return;
+}
+
+char** Process::argumentsAsChars() const
+{
+	char** argList = new char*[mArguments.size()+1];
+	for (size_t i=0; i<mArguments.size(); i++) {
+		const string& argStr=mArguments[i];
+		char* argChar = new char[argStr.size()+1];
+		memcpy(argChar, argStr.c_str(), argStr.size()+1);
+		argList[i]=argChar;
+	}
+	argList[mArguments.size()]=NULL;
+	return argList;
 }
 
 int Process::wait()

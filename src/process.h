@@ -14,6 +14,9 @@ public:
 	int getPid() const;
 
 private:
+	char** argumentsAsChars() const;
+
+private:
 	pid_t mPid;
 	string mCommand;
 	vector<string> mArguments;
