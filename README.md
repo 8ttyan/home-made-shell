@@ -21,7 +21,7 @@ command1>file # equal to "command1 > file". Different from "command 1> file"
 
 ## Lexical Tokenization
 
-The Deterministic Finite Automaton(DFA) Diagram is as follows:
+The class `LexicalTokenizer` is lexical tokenizer that represented by the following Deterministic Finite Automaton(DFA) Diagram.
 
 ```mermaid
 flowchart LR
@@ -46,39 +46,39 @@ start -- exept s.d. --> cmdargs:::final
           cmdargs -- \ --> escape
           cmdargs -- # --> comment
 start -- \ --> escape
-          escape -- any --> cmdargs
+          escape -. any .-> cmdargs
 start -- # --> comment:::final
           comment -- except '#92;n' --> comment
 start -- ' --> squate:::final
           squate -- except ',\ --> squate
           squate -- \ --> sq_escape
+                     sq_escape -. ' .-> squate
                      sq_escape -- any --> squate
 start -- #34; --> dquate:::final
                dquate -- except #34;,\ --> dquate
                dquate -- \ --> dq_escape
+                          dq_escape -.#34;.-> dquate
                           dq_escape -- any --> dquate
 ```
 
-where
-
-```mermaid
-stateDiagram-v2
-classDef final stroke-width:2pt, stroke:black;
-mid_state
-note right of mid_state: This cannot be final state. Error if there is no destination.
-
-final_state:::final
-note right of final_state: This can be final state. Return the token if there is no destination.
-```
-
-
-The s.d. (syntax delimiter) means following character set:
+where s.d. (syntax delimiter) means following character set.
 
 ```
 '>' '<' '&' '|' '\n' ' ' '(' ')' ''' '"'
 ```
+The **bold border square** can be the final state. If you are at final state and there is no destination, the function retuns a token string.
+The **normal square** cannot be the final state. Tokenization finished with error if there is no destination.
 
-This diagram is correspond to the class `LexicalTokenizer`.
+A solid line means transition to other state and append previous character to the token string. A dash line also means transition to other state, but it ignore previous character and does not push_back string array.
+
+```mermaid
+flowchart LR
+classDef final stroke-width:2pt, stroke:black;
+	id1(normal square)
+	id2(final state):::final
+	id1 -- solid --> id2
+	id1 -. dash  .-> id2
+```
 
 ## Recursive Descent Parsing
 
