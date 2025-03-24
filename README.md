@@ -24,40 +24,39 @@ command1>file # equal to "command1 > file". Different from "command 1> file"
 The Deterministic Finite Automaton(DFA) Diagram is as follows:
 
 ```mermaid
-stateDiagram-v2
-direction LR
+flowchart LR
 classDef final stroke-width:2pt, stroke:black;
 
-start --> pipe:::final : |
-          pipe --> OR:::final : |
-start --> subshell:::final : (,)
-start --> bg:::final : &
-          bg --> AND:::final : &
-          bg --> write12:::final : >
-start --> read:::final : <
-start --> write:::final : >
-          write --> append:::final : >
-          write --> specify : &
-                    specify --> dup:::final : 1,2
-start --> digit:::final : 1,2
-          digit --> write:::final : >
-          digit -->  cmdargs:::final : except s.d.
-start --> cmdargs:::final : exept s.d.
-          cmdargs --> cmdargs : except s.d.
-          cmdargs --> escape : \
-          cmdargs --> comment : #
-start --> escape : \
-          escape --> cmdargs: any
-start --> comment:::final : #
-          comment --> comment : except '#92;n'
-start --> squate:::final : '
-          squate --> squate : except ',\
-          squate --> sq_escape : \
-                     sq_escape --> squate : any
-start --> dquate:::final : "
-          dquate --> dquate : except ",\
-          dquate --> dq_escape : \
-                     dq_escape --> dquate : any
+start -- | --> pipe:::final
+          pipe -- | --> OR:::final
+start -- (,) --> subshell:::final
+start -- & --> bg:::final
+          bg -- & --> AND:::final
+          bg -- > --> write12:::final
+start -- < --> read:::final
+start -- > --> write:::final
+          write -- > --> append:::final
+          write -- & --> specify
+                    specify -- 1,2 --> dup:::final
+start -- 1,2 --> digit:::final
+          digit -- > --> write:::final
+          digit -- except s.d. --> cmdargs:::final
+start -- exept s.d. --> cmdargs:::final
+          cmdargs -- except s.d. --> cmdargs
+          cmdargs -- \ --> escape
+          cmdargs -- # --> comment
+start -- \ --> escape
+          escape -- any --> cmdargs
+start -- # --> comment:::final
+          comment -- except '#92;n' --> comment
+start -- ' --> squate:::final
+          squate -- except ',\ --> squate
+          squate -- \ --> sq_escape
+                     sq_escape -- any --> squate
+start -- #34; --> dquate:::final
+               dquate -- except #34;,\ --> dquate
+               dquate -- \ --> dq_escape
+                          dq_escape -- any --> dquate
 ```
 
 where
