@@ -27,6 +27,7 @@ The class `LexicalTokenizer` is lexical tokenizer that represented by the follow
 flowchart LR
 classDef final stroke-width:2pt, stroke:black;
 
+start -- #59; --> EoC:::final
 start -- | --> pipe:::final
           pipe -- | --> OR:::final
 start -- (,) --> subshell:::final
@@ -64,7 +65,7 @@ start -- #34; --> dquate:::final
 where s.d. (syntax delimiter) means following character set.
 
 ```
-'>' '<' '&' '|' '\n' ' ' '(' ')' ''' '"'
+'>' '<' '&' '|' ';' '\n' ' ' '(' ')' ''' '"'
 ```
 The **bold border square** can be the final state. If you are at final state and there is no destination, the function retuns a token string.
 The **normal square** cannot be the final state. Tokenization finished with error if there is no destination.
