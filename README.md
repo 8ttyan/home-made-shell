@@ -31,16 +31,16 @@ flowchart LR
 classDef final stroke-width:2pt, stroke:black;
 
 %% Define State
-write12(Write12\n< Redirect >)
-read(Read\n< Redirect >)
-append(Append\n< Redirect >)
-digit(Digit\n< Word >)
-write(Write\n< Redirect >)
-dup(Dup\n< Redirect >)
-cmdargs(Cmdargs\n< Word >)
-sq(sq\n< Word >)
-dq(dq\n< Word >)
-comment(Comment\n< Comment >)
+write12(Write12<BR>#lt;Redirector#gt;)
+read(Read<BR>#lt;Redirector#gt;)
+append(Append<BR>#lt;Redirector#gt;)
+digit(Digit<BR>#lt;Word#gt;)
+write(Write<BR>#lt;Redirector#gt;)
+dup(dup<BR>#lt;Dup#gt;)
+cmdargs(CmdArgs<BR>#lt;Word#gt;)
+sq(SQ<BR>#lt;Word#gt;)
+dq(DQ<BR>#lt;Word#gt;)
+comment(Comment<BR>#lt;Comment#gt;)
 
 %% Define Graph
 start -- #59; --> EoC:::final
@@ -98,9 +98,9 @@ title: Legend
 flowchart LR
 classDef final stroke-width:2pt, stroke:black;
 	id1(normal state)
-	id2(final state\n< Token Kind >):::final
-	id1 -- solid --> id2
-	id1 -. dash  .-> id2
+	id2(final state<BR>#lt;Token Kind#gt;):::final
+	id1 -- append prev char --> id2
+	id1 -. ignore prev char  .-> id2
 ```
 
 ## Recursive Descent Parsing
@@ -112,8 +112,9 @@ The home-made-shell syntax is defined by following Extend Backus Naur From(EBNF)
 <Sentence> ::= <ProcessGroup> [ ("&&" | "||" ) <ProcessGroup> ]
 <ProcessGroup> ::= <Process> { | <Process> }
 <Process> ::= <Command> | ( "(" <Shell> ")" )
-<Command> ::= <Word> {<Word>} { <Redirect> }
-<Word> ::= <cmdargs> | <squate> | <dq>
+<Command> ::= <Word> {<Word>} { <Redirection> | <Dup> }
+<Word> ::= <CmdArgs> | <SQ> | <DQ>
+<Redirection> ::= <Redirector> <Word>
 <Redirect> ::= ">"  |  ">>" |  ">&1" |  ">&2"
              | "1>" | "1>>" | "1>&1" | "1>&2"
              | "2>" | "2>>" | "2>&1" | "1>&2"
