@@ -7,6 +7,9 @@
 
 #include "process.h"
 #include "tokenizer.h"
+#include "prompter.h"
+#include "lexicaltokenizer.h"
+#include "test.h"
 
 void trim(char str[])
 {
@@ -18,8 +21,17 @@ void trim(char str[])
 	}
 }
 
-int main()
+int main(int argc, const char *argv[])
 {
+	if ( argc>=3 ) {
+		string arg1=argv[1];
+		string arg2=argv[2];
+		if ( arg1=="-test" ) {
+			Test myTest(arg2);
+			exit(0);
+		}
+	}
+
 	char str[1024];
 	while (1) {
 		printf("home-made-shell> ");
