@@ -28,6 +28,7 @@ enum class AutomatonState
 	Digit,
 	CmdArgs,
 	Escape,
+	IgnoreNL,
 	Comment,
 	SQ,
 	SqEsc,
