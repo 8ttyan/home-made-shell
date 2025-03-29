@@ -50,8 +50,8 @@ cmdargs(((CmdArgs)))
 escape((Escape))
 SignleQuate(((SignleQuate)))
 DoubleQuate(((DoubleQuate)))
-SingleQuateEsc((SingleQuateEsc))
-DoubleQuateEsc((DoubleQuateEsc))
+EscapeSingleQuate((EscapeSingleQuate))
+EscapeDoubleQuate((EscapeDoubleQuate))
 comment(((Comment)))
 
 %% Define Graph
@@ -79,12 +79,12 @@ start -- # --> comment
           comment -- except '#92;n' --> comment
 start -- ' --> SignleQuate
           SignleQuate -- except '\ --> SignleQuate
-          SignleQuate -- \ --> SingleQuateEsc
-                      SingleQuateEsc -- any --> SignleQuate
+          SignleQuate -- \ --> EscapeSingleQuate
+                      EscapeSingleQuate -- any --> SignleQuate
 start -- #34; --> DoubleQuate
                DoubleQuate -- except #34;\ --> DoubleQuate
-               DoubleQuate -- \ --> DoubleQuateEsc
-                           DoubleQuateEsc -- any --> DoubleQuate
+               DoubleQuate -- \ --> EscapeDoubleQuate
+                           EscapeDoubleQuate -- any --> DoubleQuate
 
 ```
 
@@ -109,10 +109,10 @@ title: Transition Type
 ---
 flowchart LR
 DoubleQuate(((DoubleQuate)))
-DoubleQuateEsc((DoubleQuateEsc))
-DoubleQuate -- \ --> DoubleQuateEsc
-DoubleQuateEsc -. #34; .-> DoubleQuate
-DoubleQuateEsc -- except #34; --> DoubleQuate
+EscapeDoubleQuate((EscapeDoubleQuate))
+DoubleQuate -- \ --> EscapeDoubleQuate
+EscapeDoubleQuate -. #34; .-> DoubleQuate
+EscapeDoubleQuate -- except #34; --> DoubleQuate
 
 ```
 
@@ -140,6 +140,7 @@ InDoubleQuate -. #34; .-> Final
 #### Extended DFM for Lexical Tokenizer
 
 Finally, we use the following Extended Deterministic Finite Automaton Diagram to describe the Lexical Tokenizer insdted of the typical DFM.
+Each arrows are correspond to `TransitionTable` defined in `src/lexicaltokenizer.cpp`. The arrow has no condition means match any characters.
 
 ```mermaid
 ---
@@ -151,65 +152,83 @@ flowchart LR
 Init((Init))
 Final(((Final)))
 EoS[EoS]
-pipe[Pipe]
+Pipe[Pipe]
 OR[Or]
-subshell[SubShell]
+SubShell[SubShell]
 BackGround[BackGround]
-AND[And]
-write12[Write12]
-read[Read]
-append[Append]
-digit[Digit]
-write[Write]
-specify[Specify]
-dup[Dup]
-cmdargs[CmdArgs]
-escape[Escape]
+And[And]
+Write12[Write12]
+Read[Read]
+Append[Append]
+Digit[Digit]
+Write[Write]
+Specify[Specify]
+Dup[Dup]
+CmdArgs[CmdArgs]
+Escape[Escape]
 BeginSingleQuate[BeginSingleQuate]
 InSingleQuate[InSingleQuate]
 EndSingleQuate[EndSingleQuate]
-SingleQuateEsc[SingleQuateEsc]
+EscapeSingleQuate[EscapeSingleQuate]
 BeginDoubleQuate[BeginDoubleQuate]
 InDoubleQuate[InDoubleQuate]
 EndDoubleQuate[EndDoubleQuate]
-DoubleQuateEsc[DoubleQuateEsc]
-comment[Comment]
+EscapeDoubleQuate[EscapeDoubleQuate]
+Comment[Comment]
 
 %% Define Graph
-Init -- #59; --> EoS --any--> Final
-Init -- | --> pipe --any--> Final
-               pipe -- | --> OR --any--> Final
-Init -- () --> subshell --any--> Final
-Init -- & --> BackGround -- except &> --> Final
-               BackGround -- & --> AND --any--> Final
-               BackGround -- > --> write12 --any--> Final
-Init -- < --> read --any--> Final
-Init -- > --> write --any--> Final
-          write -- > --> append --any--> Final
-          write -- & --> specify
-                         specify -- 12 --> dup --any-->Final
-Init -- 12 --> digit
-          digit -- > --> write
-          digit -- except s.d. --> cmdargs
-Init -- exept s.d. --> cmdargs --s.d. and \ --> Final
-          cmdargs -- except s.d. and \ --> cmdargs
-          cmdargs -- \ --> escape
-Init -- \ --> escape
-          escape -. any .-> cmdargs
-Init -- # --> comment -- #92;n --> Final
-               comment -- except '#92;n' --> comment
-Init -- ' --> BeginSingleQuate --except '--> InSingleQuate --'--> EndSingleQuate -..-> Final
-                                              InSingleQuate -- except '\ --> InSingleQuate
-                                              InSingleQuate -- \ --> SingleQuateEsc
-                                              SingleQuateEsc -.'.-> InSingleQuate
-                                              SingleQuateEsc --except '--> InSingleQuate
-               BeginSingleQuate -.'.-> EndSingleQuate
-Init -- #34; --> BeginDoubleQuate --except #34;--> InDoubleQuate --#34;--> EndDoubleQuate -..-> Final
-                                              InDoubleQuate -- except #34;\ --> InDoubleQuate
-                                              InDoubleQuate -- \ --> DoubleQuateEsc
-                                              DoubleQuateEsc -.#34;.-> InDoubleQuate
-                                              DoubleQuateEsc --except #34;--> InDoubleQuate
-               BeginDoubleQuate -.#34;.-> EndDoubleQuate
+Init -- #59; --> EoS
+  EoS --any--> Final
+Init --|--> Pipe
+  Pipe --> Final
+  Pipe -- | --> OR
+    OR --> Final
+Init --()--> SubShell
+  SubShell--> Final
+Init --&--> BackGround
+  BackGround --except &>--> Final
+  BackGround --&--> And
+    And --> Final
+  BackGround -- > --> Write12
+    Write12 --> Final
+Init -- < --> Read
+  Read --> Final
+Init -- > --> Write
+  Write --> Final
+  write -- > --> Append
+    Append --> Final
+  write -- & --> specify
+    Specify -- 12 --> Dup
+      Dup --> Final
+Init --12--> Digit
+  Digit -- > --> Write
+  Digit -- except s.d. --> CmdArgs
+Init -- exept s.d. --> CmdArgs --s.d. and \ --> Final
+  CmdArgs -- except s.d. and \ --> CmdArgs
+  CmdArgs -- \ --> Escape
+Init -- \ --> Escape
+  Escape -..-> CmdArgs
+Init --#--> Comment
+  Comment --#92;n--> Final
+  Comment --except '#92;n'--> Comment
+Init -- ' --> BeginSingleQuate
+  BeginSingleQuate --except '--> InSingleQuate
+    InSingleQuate --'--> EndSingleQuate
+      EndSingleQuate -..-> Final
+    InSingleQuate -- except '\ --> InSingleQuate
+    InSingleQuate -- \ --> EscapeSingleQuate
+      EscapeSingleQuate -.'.-> InSingleQuate
+      EscapeSingleQuate --except '--> InSingleQuate
+  BeginSingleQuate -.'.-> EndSingleQuate
+Init -- #34; --> BeginDoubleQuate
+  BeginDoubleQuate --except #34;--> InDoubleQuate
+    InDoubleQuate --#34;--> EndDoubleQuate
+      EndDoubleQuate -..-> Final
+   InDoubleQuate -- except #34;\ --> InDoubleQuate
+   InDoubleQuate -- \ --> EscapeDoubleQuate
+     EscapeDoubleQuate -.#34;.-> InDoubleQuate
+     EscapeDoubleQuate --except #34;--> InDoubleQuate
+   BeginDoubleQuate -.#34;.-> EndDoubleQuate
 ```
 
 ## Recursive Descent Parsing
