@@ -195,9 +195,9 @@ Init -- < --> Read
   Read --> Final
 Init -- > --> Write
   Write --> Final
-  write -- > --> Append
+  Write -- > --> Append
     Append --> Final
-  write -- & --> specify
+  Write -- & --> Specify
     Specify -- 12 --> Dup
       Dup --> Final
 Init --12--> Digit
