@@ -61,14 +61,14 @@ start -- | --> pipe
 start -- (,) --> subshell
 start -- & --> BackGround
                BackGround -- & --> AND
-               BackGround -- > --> write12
+               BackGround -- #62; --> write12
 start -- < --> read
-start -- > --> write
-          write -- > --> append
+start -- #62; --> write
+          write -- #62; --> append
           write -- & --> specify
                     specify -- 1,2 --> dup
 start -- 1,2 --> digit
-          digit -- > --> write
+          digit -- #62; --> write
           digit -- except s.d. --> cmdargs
 start -- exept s.d. --> cmdargs
           cmdargs -- except s.d. --> cmdargs
@@ -190,19 +190,19 @@ Init --&--> BackGround
   BackGround --except &>--> Final
   BackGround --&--> And
     And --> Final
-  BackGround -- > --> Write12
+  BackGround -- #62; --> Write12
     Write12 --> Final
 Init -- < --> Read
   Read --> Final
-Init -- > --> Write
+Init -- #62; --> Write
   Write --> Final
-  Write -- > --> Append
+  Write -- #62; --> Append
     Append --> Final
   Write -- & --> Specify
     Specify -- 12 --> Dup
       Dup --> Final
 Init --12--> Digit
-  Digit -- > --> Write
+  Digit -- #62; --> Write
   Digit -- except s.d. --> CmdArgs
 Init -- exept s.d. --> CmdArgs
   CmdArgs --s.d. and \ --> Final
@@ -214,7 +214,7 @@ Init -- \ --> Escape
     IgnoreNL -.\.-> Escape
     IgnoreNL -..->|except s.d.| CmdArgs
     IgnoreNL -..->|s.d.| Final
-Init --#--> Comment
+Init --#35;--> Comment
   Comment --#92;n--> Final
   Comment --except '#92;n'--> Comment
 Init -- ' --> BeginSingleQuate
