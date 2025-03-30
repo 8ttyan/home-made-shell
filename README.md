@@ -151,30 +151,30 @@ flowchart LR
 %% Define State
 Init((Init))
 Final(((Final)))
-EoS[EoS]
-Pipe[Pipe]
-OR[Or]
-SubShell[SubShell]
-BackGround[BackGround]
-And[And]
-Write12[Write12]
-Read[Read]
-Append[Append]
-Digit[Digit]
-Write[Write]
+EoS[EoS<BR>#60;EoS#62;]
+Pipe[Pipe<BR>#60;Pipe#62;]
+OR[Or<BR>#60;Or#62;]
+SubShell[SubShell<BR>#60;SubShell#62;]
+BackGround[BackGround<BR>#60;BackGround#62;]
+And[And<BR>#60;And#62;]
+Write12[Write12<BR>#60;Redirect#62;]
+Read[Read<BR>#60;Redirect#62;]
+Append[Append<BR>#60;Redirect#62;]
+Digit[Digit<BR>#60;Word#62;]
+Write[Write<BR>#60;Redirect#62;]
 Specify[Specify]
-Dup[Dup]
-CmdArgs[CmdArgs]
+Dup[Dup<BR>#60;Redirect#62;]
+CmdArgs[CmdArgs<BR>#60;Word#62;]
 Escape[Escape]
 BeginSingleQuate[BeginSingleQuate]
 InSingleQuate[InSingleQuate]
-EndSingleQuate[EndSingleQuate]
+EndSingleQuate[EndSingleQuate<BR>#60;Word#62;]
 EscapeSingleQuate[EscapeSingleQuate]
 BeginDoubleQuate[BeginDoubleQuate]
 InDoubleQuate[InDoubleQuate]
-EndDoubleQuate[EndDoubleQuate]
+EndDoubleQuate[EndDoubleQuate<BR>#60;Word#62;]
 EscapeDoubleQuate[EscapeDoubleQuate]
-Comment[Comment]
+Comment[Comment<BR>#60;Comment#62;]
 
 %% Define Graph
 Init --\s\t--> Init
@@ -237,6 +237,8 @@ Init -- #34; --> BeginDoubleQuate
    BeginDoubleQuate -.#34;.-> EndDoubleQuate
 ```
 
+where the expression `<foo>` is the token type correspond to EBNF described in the next section.
+
 ## Recursive Descent Parsing
 
 The home-made-shell syntax is defined by following Extend Backus Naur From(EBNF).
@@ -244,14 +246,11 @@ The home-made-shell syntax is defined by following Extend Backus Naur From(EBNF)
 ```EBNF
 <Shell> ::= <Sentence> {(";"|"&") <Sentence> } [ <Comment> ]
 <Sentence> ::= <ProcessGroup> [ ("&&" | "||" ) <ProcessGroup> ]
-<ProcessGroup> ::= <Process> { | <Process> }
+<ProcessGroup> ::= <Process> { "|" <Process> }
 <Process> ::= <Command> | ( "(" <Shell> ")" )
 <Command> ::= <Word> {<Word>} { <Redirection> | <Dup> }
 <Word> ::= <CmdArgs> | <SignleQuate> | <DoubleQuate>
 <Redirection> ::= <Redirector> <Word>
-<Redirect> ::= ">"  |  ">>" |  ">&1" |  ">&2"
-             | "1>" | "1>>" | "1>&1" | "1>&2"
-             | "2>" | "2>>" | "2>&1" | "1>&2"
 ```
 
 * `{}` is repeat 0 or more times.
