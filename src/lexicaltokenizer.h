@@ -40,9 +40,9 @@ enum class AutomatonState
 	EscapeDoubleQuate,
 };
 
-enum class MatchCondition
+enum class Match
 {
-	Include,
+	OneOf,
 	Except,
 };
 

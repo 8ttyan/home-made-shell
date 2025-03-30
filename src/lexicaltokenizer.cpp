@@ -12,8 +12,8 @@ struct Transition
 {
 	AutomatonState currentState;
 	AutomatonState nextState;
+	Match condition;
 	const char *conditionCharList;
-	MatchCondition condition;
 	bool appendPrevChar;
 
 	bool isMatch(const char c) const
@@ -21,14 +21,14 @@ struct Transition
 		for (int i=0; ; i++) {
 			if ( conditionCharList[i]=='\0' ) break;
 			if ( conditionCharList[i]==c ) {
-				if ( condition==MatchCondition::Include ) {
+				if ( condition==Match::OneOf ) {
 					return true;
 				} else {
 					return false;
 				}
 			}
 		}
-		if ( condition==MatchCondition::Include ) {
+		if ( condition==Match::OneOf ) {
 			return false;
 		} else {
 			return true;
@@ -39,67 +39,67 @@ struct Transition
 #define __sd "><&|;\n ()'\"#"
 
 Transition TransitionTable[] = {
-	{AutomatonState::Init, AutomatonState::Init, " \t", MatchCondition::Include, false},
-	{AutomatonState::Init, AutomatonState::EoS,  ";",   MatchCondition::Include, false},
-		{AutomatonState::EoS, AutomatonState::Final, "", MatchCondition::Except, true},
-	{AutomatonState::Init, AutomatonState::Pipe, "|", MatchCondition::Include, false},
-		{AutomatonState::Pipe, AutomatonState::Final, "", MatchCondition::Except, true},
-		{AutomatonState::Pipe, AutomatonState::Or,   "|", MatchCondition::Include, true},
-			{AutomatonState::Or, AutomatonState::Final,   "", MatchCondition::Except, true},
-	{AutomatonState::Init, AutomatonState::Subshell, "()", MatchCondition::Include, false},
-		{AutomatonState::Subshell, AutomatonState::Final, "", MatchCondition::Except, true},
-	{AutomatonState::Init, AutomatonState::BackGround, "&", MatchCondition::Include, false},
-		{AutomatonState::BackGround, AutomatonState::Final, "&>", MatchCondition::Except, true},
-		{AutomatonState::BackGround, AutomatonState::And, "&", MatchCondition::Include, true},
-			{AutomatonState::And, AutomatonState::Final, "", MatchCondition::Except, true},
-		{AutomatonState::BackGround, AutomatonState::Write12, ">", MatchCondition::Include, true},
-			{AutomatonState::Write12, AutomatonState::Final, "", MatchCondition::Except, true},
-	{AutomatonState::Init, AutomatonState::Read, "<", MatchCondition::Include, false},
-		{AutomatonState::Read, AutomatonState::Final, "", MatchCondition::Except, false},
-	{AutomatonState::Init, AutomatonState::Write, ">", MatchCondition::Include, false},
-		{AutomatonState::Write, AutomatonState::Final, "", MatchCondition::Except, false},
-		{AutomatonState::Write, AutomatonState::Append, ">", MatchCondition::Include, true},
-			{AutomatonState::Append, AutomatonState::Final, "", MatchCondition::Except, true},
-		{AutomatonState::Write, AutomatonState::Specify, "&", MatchCondition::Include, true},
-			{AutomatonState::Specify, AutomatonState::Dup, "12", MatchCondition::Include, true},
-				{AutomatonState::Dup, AutomatonState::Final, "", MatchCondition::Except, true},
-	{AutomatonState::Init, AutomatonState::Digit, "12", MatchCondition::Include, false},
-		{AutomatonState::Digit, AutomatonState::Write, ">", MatchCondition::Include, true},
-		{AutomatonState::Digit, AutomatonState::CmdArgs, __sd, MatchCondition::Except, true},
-	{AutomatonState::Init, AutomatonState::CmdArgs, __sd, MatchCondition::Except, false},
-		{AutomatonState::CmdArgs, AutomatonState::Final, __sd, MatchCondition::Include, true},
-		{AutomatonState::CmdArgs, AutomatonState::CmdArgs, __sd "\\", MatchCondition::Except, true},
-		{AutomatonState::CmdArgs, AutomatonState::Escape, "\\", MatchCondition::Include, true},
-	{AutomatonState::Init, AutomatonState::Escape, "\\", MatchCondition::Include, false},
-		{AutomatonState::Escape, AutomatonState::CmdArgs, "\n", MatchCondition::Except, false},
-		{AutomatonState::Escape, AutomatonState::IgnoreNL, "\n", MatchCondition::Include, false},
-			{AutomatonState::IgnoreNL, AutomatonState::Escape, "\\", MatchCondition::Include, false},
-			{AutomatonState::IgnoreNL, AutomatonState::CmdArgs, __sd, MatchCondition::Except, false},
-			{AutomatonState::IgnoreNL, AutomatonState::Final, __sd, MatchCondition::Include, false},
-	{AutomatonState::Init, AutomatonState::Comment, "#", MatchCondition::Include, false},
-		{AutomatonState::Comment, AutomatonState::Final, "\n", MatchCondition::Include, true},
-		{AutomatonState::Comment, AutomatonState::Comment, "\n", MatchCondition::Except, true},
-	{AutomatonState::Init, AutomatonState::BeginSingleQuate, "'", MatchCondition::Include, false},
-		{AutomatonState::BeginSingleQuate, AutomatonState::InSingleQuate, "'", MatchCondition::Except, false},
-		{AutomatonState::InSingleQuate, AutomatonState::EndSingleQuate, "'", MatchCondition::Include, true},
-			{AutomatonState::EndSingleQuate, AutomatonState::Final, "", MatchCondition::Except, false},
-		{AutomatonState::InSingleQuate, AutomatonState::InSingleQuate, "'\\", MatchCondition::Except, true},
-		{AutomatonState::InSingleQuate, AutomatonState::EscapeSingleQuate, "\\", MatchCondition::Include, true},
-			{AutomatonState::EscapeSingleQuate, AutomatonState::InSingleQuate, "'", MatchCondition::Include, false},
-			{AutomatonState::EscapeSingleQuate, AutomatonState::InSingleQuate, "'", MatchCondition::Except, true},
-		{AutomatonState::BeginSingleQuate, AutomatonState::EndSingleQuate, "'", MatchCondition::Include, false},
-	{AutomatonState::Init, AutomatonState::BeginDoubleQuate, "\"", MatchCondition::Include, false},
-		{AutomatonState::BeginDoubleQuate, AutomatonState::InDoubleQuate, "\"", MatchCondition::Except, false},
-		{AutomatonState::InDoubleQuate, AutomatonState::EndDoubleQuate, "\"", MatchCondition::Include, true},
-			{AutomatonState::EndDoubleQuate, AutomatonState::Final, "", MatchCondition::Except, false},
-		{AutomatonState::InDoubleQuate, AutomatonState::InDoubleQuate, "\"\\", MatchCondition::Except, true},
-		{AutomatonState::InDoubleQuate, AutomatonState::EscapeDoubleQuate, "\\", MatchCondition::Include, true},
-			{AutomatonState::EscapeDoubleQuate, AutomatonState::InDoubleQuate, "\"", MatchCondition::Include, false},
-			{AutomatonState::EscapeDoubleQuate, AutomatonState::InDoubleQuate, "\"", MatchCondition::Except, true},
-		{AutomatonState::BeginDoubleQuate, AutomatonState::EndDoubleQuate, "\"", MatchCondition::Include, false},
+	{AutomatonState::Init, AutomatonState::Init, Match::OneOf, " \t", false},
+	{AutomatonState::Init, AutomatonState::EoS,   Match::OneOf,  ";", false},
+		{AutomatonState::EoS, AutomatonState::Final, Match::Except, "", true},
+	{AutomatonState::Init, AutomatonState::Pipe, Match::OneOf, "|", false},
+		{AutomatonState::Pipe, AutomatonState::Final, Match::Except, "", true},
+		{AutomatonState::Pipe, AutomatonState::Or, Match::OneOf,   "|", true},
+			{AutomatonState::Or, AutomatonState::Final, Match::Except,   "", true},
+	{AutomatonState::Init, AutomatonState::Subshell, Match::OneOf, "()", false},
+		{AutomatonState::Subshell, AutomatonState::Final, Match::Except, "", true},
+	{AutomatonState::Init, AutomatonState::BackGround, Match::OneOf, "&", false},
+		{AutomatonState::BackGround, AutomatonState::Final, Match::Except, "&>", true},
+		{AutomatonState::BackGround, AutomatonState::And, Match::OneOf, "&", true},
+			{AutomatonState::And, AutomatonState::Final, Match::Except, "", true},
+		{AutomatonState::BackGround, AutomatonState::Write12, Match::OneOf, ">", true},
+			{AutomatonState::Write12, AutomatonState::Final, Match::Except, "", true},
+	{AutomatonState::Init, AutomatonState::Read, Match::OneOf, "<", false},
+		{AutomatonState::Read, AutomatonState::Final, Match::Except, "", false},
+	{AutomatonState::Init, AutomatonState::Write, Match::OneOf, ">", false},
+		{AutomatonState::Write, AutomatonState::Final, Match::Except, "", false},
+		{AutomatonState::Write, AutomatonState::Append, Match::OneOf, ">", true},
+			{AutomatonState::Append, AutomatonState::Final, Match::Except, "", true},
+		{AutomatonState::Write, AutomatonState::Specify, Match::OneOf, "&", true},
+			{AutomatonState::Specify, AutomatonState::Dup, Match::OneOf, "12", true},
+				{AutomatonState::Dup, AutomatonState::Final, Match::Except, "", true},
+	{AutomatonState::Init, AutomatonState::Digit, Match::OneOf, "12", false},
+		{AutomatonState::Digit, AutomatonState::Write, Match::OneOf, ">", true},
+		{AutomatonState::Digit, AutomatonState::CmdArgs, Match::Except, __sd, true},
+	{AutomatonState::Init, AutomatonState::CmdArgs, Match::Except, __sd, false},
+		{AutomatonState::CmdArgs, AutomatonState::Final, Match::OneOf, __sd, true},
+		{AutomatonState::CmdArgs, AutomatonState::CmdArgs, Match::Except, __sd "\\", true},
+		{AutomatonState::CmdArgs, AutomatonState::Escape, Match::OneOf, "\\", true},
+	{AutomatonState::Init, AutomatonState::Escape, Match::OneOf, "\\", false},
+		{AutomatonState::Escape, AutomatonState::CmdArgs, Match::Except, "\n", false},
+		{AutomatonState::Escape, AutomatonState::IgnoreNL, Match::OneOf, "\n", false},
+			{AutomatonState::IgnoreNL, AutomatonState::Escape, Match::OneOf, "\\", false},
+			{AutomatonState::IgnoreNL, AutomatonState::CmdArgs, Match::Except, __sd, false},
+			{AutomatonState::IgnoreNL, AutomatonState::Final, Match::OneOf, __sd, false},
+	{AutomatonState::Init, AutomatonState::Comment, Match::OneOf, "#", false},
+		{AutomatonState::Comment, AutomatonState::Final, Match::OneOf, "\n", true},
+		{AutomatonState::Comment, AutomatonState::Comment, Match::Except, "\n", true},
+	{AutomatonState::Init, AutomatonState::BeginSingleQuate, Match::OneOf, "'", false},
+		{AutomatonState::BeginSingleQuate, AutomatonState::InSingleQuate, Match::Except, "'", false},
+		{AutomatonState::InSingleQuate, AutomatonState::EndSingleQuate, Match::OneOf, "'", true},
+			{AutomatonState::EndSingleQuate, AutomatonState::Final, Match::Except, "", false},
+		{AutomatonState::InSingleQuate, AutomatonState::InSingleQuate, Match::Except, "'\\", true},
+		{AutomatonState::InSingleQuate, AutomatonState::EscapeSingleQuate, Match::OneOf, "\\", true},
+			{AutomatonState::EscapeSingleQuate, AutomatonState::InSingleQuate, Match::OneOf, "'", false},
+			{AutomatonState::EscapeSingleQuate, AutomatonState::InSingleQuate, Match::Except, "'", true},
+		{AutomatonState::BeginSingleQuate, AutomatonState::EndSingleQuate, Match::OneOf, "'", false},
+	{AutomatonState::Init, AutomatonState::BeginDoubleQuate, Match::OneOf, "\"", false},
+		{AutomatonState::BeginDoubleQuate, AutomatonState::InDoubleQuate, Match::Except, "\"", false},
+		{AutomatonState::InDoubleQuate, AutomatonState::EndDoubleQuate, Match::OneOf, "\"", true},
+			{AutomatonState::EndDoubleQuate, AutomatonState::Final, Match::Except, "", false},
+		{AutomatonState::InDoubleQuate, AutomatonState::InDoubleQuate, Match::Except, "\"\\", true},
+		{AutomatonState::InDoubleQuate, AutomatonState::EscapeDoubleQuate, Match::OneOf, "\\", true},
+			{AutomatonState::EscapeDoubleQuate, AutomatonState::InDoubleQuate, Match::OneOf, "\"", false},
+			{AutomatonState::EscapeDoubleQuate, AutomatonState::InDoubleQuate, Match::Except, "\"", true},
+		{AutomatonState::BeginDoubleQuate, AutomatonState::EndDoubleQuate, Match::OneOf, "\"", false},
 };
 
-Transition __transitionNullObject = { AutomatonState::None, AutomatonState::None, "", MatchCondition::Except, false };
+Transition __transitionNullObject = { AutomatonState::None, AutomatonState::None, Match::Except, "", false };
 
 const Transition& getMatchedTransition(AutomatonState pState, char pC)
 {
