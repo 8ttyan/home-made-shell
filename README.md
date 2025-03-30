@@ -204,7 +204,7 @@ Init -- #62; --> Write
 Init --12--> Digit
   Digit -- #62; --> Write
   Digit -- except s.d. --> CmdArgs
-Init -- exept s.d. --> CmdArgs
+Init -- exept s.d. \\ --> CmdArgs
   CmdArgs --s.d. --> Final
   CmdArgs -- except s.d. and \ --> CmdArgs
   CmdArgs -- \ --> Escape

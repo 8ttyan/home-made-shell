@@ -66,7 +66,7 @@ Transition TransitionTable[] = {
 	{AutomatonState::Init, AutomatonState::Digit, Match::OneOf, "12", false},
 		{AutomatonState::Digit, AutomatonState::Write, Match::OneOf, ">", true},
 		{AutomatonState::Digit, AutomatonState::CmdArgs, Match::Except, __sd, true},
-	{AutomatonState::Init, AutomatonState::CmdArgs, Match::Except, __sd, false},
+	{AutomatonState::Init, AutomatonState::CmdArgs, Match::Except, __sd "\\", false},
 		{AutomatonState::CmdArgs, AutomatonState::Final, Match::OneOf, __sd, true},
 		{AutomatonState::CmdArgs, AutomatonState::CmdArgs, Match::Except, __sd "\\", true},
 		{AutomatonState::CmdArgs, AutomatonState::Escape, Match::OneOf, "\\", true},
