@@ -1,5 +1,7 @@
 #pragma once
 
+#include "automatonstate.h"
+
 struct AutomatonTransition
 {
 	AutomatonState currentState;
@@ -38,8 +40,8 @@ AutomatonTransition TransitionTable[] = {
 		{AutomatonState::Pipe, AutomatonState::Final, Match::Except, "", true},
 		{AutomatonState::Pipe, AutomatonState::Or, Match::OneOf,   "|", true},
 			{AutomatonState::Or, AutomatonState::Final, Match::Except,   "", true},
-	{AutomatonState::Init, AutomatonState::Subshell, Match::OneOf, "()", false},
-		{AutomatonState::Subshell, AutomatonState::Final, Match::Except, "", true},
+	{AutomatonState::Init, AutomatonState::SubShell, Match::OneOf, "()", false},
+		{AutomatonState::SubShell, AutomatonState::Final, Match::Except, "", true},
 	{AutomatonState::Init, AutomatonState::BackGround, Match::OneOf, "&", false},
 		{AutomatonState::BackGround, AutomatonState::Final, Match::Except, "&>", true},
 		{AutomatonState::BackGround, AutomatonState::And, Match::OneOf, "&", true},

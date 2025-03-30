@@ -12,7 +12,7 @@ enum class AutomatonState
 	Pipe,
 	And,
 	Or,
-	Subshell,
+	SubShell,
 	BackGround,
 	Write12,
 	Read,

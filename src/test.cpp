@@ -36,7 +36,8 @@ void Test::TestLexicalTokenizer()
 		LexicalTokenizer lt(prompter);
 		Token token;
 		while ( lt>>token ) {
-			printf("token: %s\n", token.c_str());
+			string type=TokenTypeToString( token.type() );
+			printf("(TokenType:%s) %s\n", type.c_str(), token.c_str());
 		}
 	}
 }

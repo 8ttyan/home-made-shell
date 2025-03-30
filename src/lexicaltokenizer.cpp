@@ -2,6 +2,7 @@
 #include "lexicaltokenizer.h"
 #include "automatontransition.h"
 #include "token.h"
+#include "statetypemapping.h"
 
 LexicalTokenizer::LexicalTokenizer(Prompter& pTarget)
 : mTarget(pTarget)
@@ -27,7 +28,6 @@ bool LexicalTokenizer::operator >> (Token& pToken)
 	}
 	if ( mState==AutomatonState::Init && mCurrentChar=='\n' ) {
 		mCurrentChar = '\0';
-		//puts("end 1");
 		return false;
 	}
 	char prevChar='\0';
@@ -35,27 +35,26 @@ bool LexicalTokenizer::operator >> (Token& pToken)
 		//printf("prev=%c cur=%c token=%s\n", prevChar, mCurrentChar, token.c_str());
 		AutomatonTransition trans = getMatchedTransition(mState,mCurrentChar);
 		if ( trans.currentState==AutomatonState::None ) {
-			//puts("end 2");
 			return false;
 		}
-		mState = trans.nextState;
 		if ( prevChar!='\0' && trans.appendPrevChar ) {
-			//printf("append %c to %s", prevChar, token.c_str());
 			token += prevChar;
-			//printf(" results=%s\n",token.c_str());
 		}
-		if ( mState==AutomatonState::Final ) {
-			// Do not ignore mCurrentChar because the final state is equal to next token's init state.
+		if ( trans.nextState==AutomatonState::Final ) {
+			for (const StateTypeMapping& stm : StateTypeMap) {
+				if ( stm.automatonState==mState ) {
+					token.setType( stm.tokenType );
+					break;
+				}
+			}
 			pToken = token;
 			mState = AutomatonState::Init;
-			//puts("end 3");
 			return true;
 		}
+		mState = trans.nextState;
 		prevChar = mCurrentChar;
 		mTarget >> mCurrentChar;
 	}
-
-	//puts("end 4");
 	return true;
 }
 

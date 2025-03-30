@@ -14,8 +14,12 @@ Token::Token(const char* pChar, TokenType pType)
 , mType(pType)
 {
 }
+void Token::setType(const TokenType& pType)
+{
+	mType = pType;
+}
 
-TokenType Token::Type()
+TokenType Token::type()
 {
 	return mType;
 }
