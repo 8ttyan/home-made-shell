@@ -3,6 +3,7 @@
 #include "test.h"
 #include "prompter.h"
 #include "lexicaltokenizer.h"
+#include "token.h"
 
 Test::Test(const string& pMode)
 {
@@ -33,7 +34,7 @@ void Test::TestLexicalTokenizer()
 	while (1) {
 		Prompter prompter(stdin,stdout);
 		LexicalTokenizer lt(prompter);
-		string token;
+		Token token;
 		while ( lt>>token ) {
 			printf("token: %s\n", token.c_str());
 		}

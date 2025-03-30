@@ -1,6 +1,7 @@
 
 #include "lexicaltokenizer.h"
 #include "automatontransition.h"
+#include "token.h"
 
 LexicalTokenizer::LexicalTokenizer(Prompter& pTarget)
 : mTarget(pTarget)
@@ -18,9 +19,9 @@ const AutomatonTransition& getMatchedTransition(AutomatonState pState, char pC)
 	return __transitionNullObject;
 }
 
-bool LexicalTokenizer::operator >> (string& pToken)
+bool LexicalTokenizer::operator >> (Token& pToken)
 {
-	string token;
+	Token token;
 	if ( mCurrentChar=='\0' ) {
 		mTarget >> mCurrentChar;
 	}
