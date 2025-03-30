@@ -67,14 +67,14 @@ Transition TransitionTable[] = {
 		{AutomatonState::Digit, AutomatonState::Write, ">", MatchCondition::Include, true},
 		{AutomatonState::Digit, AutomatonState::CmdArgs, __sd, MatchCondition::Except, true},
 	{AutomatonState::Init, AutomatonState::CmdArgs, __sd, MatchCondition::Except, false},
-		{AutomatonState::CmdArgs, AutomatonState::Final, __sd "\\", MatchCondition::Include, true},
+		{AutomatonState::CmdArgs, AutomatonState::Final, __sd, MatchCondition::Include, true},
 		{AutomatonState::CmdArgs, AutomatonState::CmdArgs, __sd "\\", MatchCondition::Except, true},
 		{AutomatonState::CmdArgs, AutomatonState::Escape, "\\", MatchCondition::Include, true},
 	{AutomatonState::Init, AutomatonState::Escape, "\\", MatchCondition::Include, false},
-		{AutomatonState::Escape, AutomatonState::CmdArgs, "\n", MatchCondition::Except, true},
-		{AutomatonState::Escape, AutomatonState::IgnoreNL, "\n", MatchCondition::Include, true},
-			{AutomatonState::IgnoreNL, AutomatonState::Escape, "\\", MatchCondition::Include, true},
-			{AutomatonState::IgnoreNL, AutomatonState::CmdArgs, __sd, MatchCondition::Except, true},
+		{AutomatonState::Escape, AutomatonState::CmdArgs, "\n", MatchCondition::Except, false},
+		{AutomatonState::Escape, AutomatonState::IgnoreNL, "\n", MatchCondition::Include, false},
+			{AutomatonState::IgnoreNL, AutomatonState::Escape, "\\", MatchCondition::Include, false},
+			{AutomatonState::IgnoreNL, AutomatonState::CmdArgs, __sd, MatchCondition::Except, false},
 			{AutomatonState::IgnoreNL, AutomatonState::Final, __sd, MatchCondition::Include, false},
 	{AutomatonState::Init, AutomatonState::Comment, "#", MatchCondition::Include, false},
 		{AutomatonState::Comment, AutomatonState::Final, "\n", MatchCondition::Include, true},
@@ -118,6 +118,7 @@ bool LexicalTokenizer::operator >> (string& pToken)
 	}
 	if ( mState==AutomatonState::Init && mCurrentChar=='\n' ) {
 		mCurrentChar = '\0';
+		//puts("end 1");
 		return false;
 	}
 	char prevChar='\0';
@@ -125,7 +126,7 @@ bool LexicalTokenizer::operator >> (string& pToken)
 		//printf("prev=%c cur=%c token=%s\n", prevChar, mCurrentChar, token.c_str());
 		Transition trans = getMatchedTransition(mState,mCurrentChar);
 		if ( trans.currentState==AutomatonState::None ) {
-			printf("None\n");
+			//puts("end 2");
 			return false;
 		}
 		mState = trans.nextState;
@@ -138,12 +139,14 @@ bool LexicalTokenizer::operator >> (string& pToken)
 			// Do not ignore mCurrentChar because the final state is equal to next token's init state.
 			pToken = token;
 			mState = AutomatonState::Init;
+			//puts("end 3");
 			return true;
 		}
 		prevChar = mCurrentChar;
 		mTarget >> mCurrentChar;
 	}
 
+	//puts("end 4");
 	return true;
 }
 
