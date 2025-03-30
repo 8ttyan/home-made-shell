@@ -177,6 +177,7 @@ EscapeDoubleQuate[EscapeDoubleQuate]
 Comment[Comment]
 
 %% Define Graph
+Init --\s\t--> Init
 Init -- #59; --> EoS
   EoS --any--> Final
 Init --|--> Pipe
@@ -203,16 +204,21 @@ Init -- > --> Write
 Init --12--> Digit
   Digit -- > --> Write
   Digit -- except s.d. --> CmdArgs
-Init -- exept s.d. --> CmdArgs --s.d. and \ --> Final
+Init -- exept s.d. --> CmdArgs
+  CmdArgs --s.d. and \ --> Final
   CmdArgs -- except s.d. and \ --> CmdArgs
   CmdArgs -- \ --> Escape
 Init -- \ --> Escape
-  Escape -..-> CmdArgs
+  Escape -.except #92;n.-> CmdArgs
+  Escape -.#92;n.-> IgnoreNL
+    IgnoreNL -.\.-> Escape
+    IgnoreNL -.except s.d..-> CmdArgs
+	IgnoreNL -. s.d. .-> Final
 Init --#--> Comment
   Comment --#92;n--> Final
   Comment --except '#92;n'--> Comment
 Init -- ' --> BeginSingleQuate
-  BeginSingleQuate --except '--> InSingleQuate
+  BeginSingleQuate -.except '.-> InSingleQuate
     InSingleQuate --'--> EndSingleQuate
       EndSingleQuate -..-> Final
     InSingleQuate -- except '\ --> InSingleQuate

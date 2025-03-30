@@ -30,10 +30,20 @@ enum class AutomatonState
 	Escape,
 	IgnoreNL,
 	Comment,
-	SQ,
-	SqEsc,
-	DQ,
-	DqEsc,
+	BeginSingleQuate,
+	InSingleQuate,
+	EndSingleQuate,
+	EscapeSingleQuate,
+	BeginDoubleQuate,
+	InDoubleQuate,
+	EndDoubleQuate,
+	EscapeDoubleQuate,
+};
+
+enum class MatchCondition
+{
+	Include,
+	Except,
 };
 
 class LexicalTokenizer
