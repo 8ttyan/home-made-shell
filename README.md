@@ -212,8 +212,8 @@ Init -- \ --> Escape
   Escape -.except #92;n.-> CmdArgs
   Escape -.#92;n.-> IgnoreNL
     IgnoreNL -.\.-> Escape
-    IgnoreNL -.except s.d..-> CmdArgs
-	IgnoreNL -. s.d. .-> Final
+    IgnoreNL -..->|except s.d.| CmdArgs
+    IgnoreNL -..->|s.d.| Final
 Init --#--> Comment
   Comment --#92;n--> Final
   Comment --except '#92;n'--> Comment
