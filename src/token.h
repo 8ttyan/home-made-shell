@@ -12,6 +12,7 @@ public:
 	Token(const char* pChar, TokenType pType=TokenType::None);
 	void setType(const TokenType&);
 	TokenType type();
+	void clear();
 
 private:
 	TokenType mType;

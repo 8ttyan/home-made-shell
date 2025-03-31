@@ -24,3 +24,9 @@ TokenType Token::type()
 	return mType;
 }
 
+void Token::clear()
+{
+	string::clear();
+	mType = TokenType::None;
+}
+

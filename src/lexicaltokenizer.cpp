@@ -22,7 +22,13 @@ const AutomatonTransition& getMatchedTransition(AutomatonState pState, char pC)
 
 bool LexicalTokenizer::operator >> (Token& pToken)
 {
-	Token token;
+	bool ret = operator++();
+	pToken = mCurrentToken;
+}
+
+bool LexicalTokenizer::operator ++ ()
+{
+	mCurrentToken.clear();
 	if ( mCurrentChar=='\0' ) {
 		mTarget >> mCurrentChar;
 	}
@@ -32,22 +38,21 @@ bool LexicalTokenizer::operator >> (Token& pToken)
 	}
 	char prevChar='\0';
 	while ( mCurrentChar!='\0' ) {
-		//printf("prev=%c cur=%c token=%s\n", prevChar, mCurrentChar, token.c_str());
+		//printf("prev=%c cur=%c mCurrentToken=%s\n", prevChar, mCurrentChar, mCurrentToken.c_str());
 		AutomatonTransition trans = getMatchedTransition(mState,mCurrentChar);
 		if ( trans.currentState==AutomatonState::None ) {
 			return false;
 		}
 		if ( prevChar!='\0' && trans.appendPrevChar ) {
-			token += prevChar;
+			mCurrentToken += prevChar;
 		}
 		if ( trans.nextState==AutomatonState::Final ) {
 			for (const StateTypeMapping& stm : StateTypeMap) {
 				if ( stm.automatonState==mState ) {
-					token.setType( stm.tokenType );
+					mCurrentToken.setType( stm.tokenType );
 					break;
 				}
 			}
-			pToken = token;
 			mState = AutomatonState::Init;
 			return true;
 		}
@@ -56,5 +61,10 @@ bool LexicalTokenizer::operator >> (Token& pToken)
 		mTarget >> mCurrentChar;
 	}
 	return true;
+}
+
+Token LexicalTokenizer::operator * () const
+{
+	return mCurrentToken;
 }
 

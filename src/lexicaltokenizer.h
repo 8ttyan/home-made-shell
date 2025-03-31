@@ -5,7 +5,7 @@
 using namespace std;
 #include "prompter.h"
 #include "automatonstate.h"
-class Token;
+#include "token.h"
 
 enum class Match
 {
@@ -18,10 +18,14 @@ class LexicalTokenizer
 public:
 	LexicalTokenizer(Prompter& pTarget);
 	bool operator >> (Token& pToken);
+	bool operator ++ ();
+//	bool operator ++ (int);
+	Token operator * () const;
 
 private:
 	Prompter& mTarget;
 	AutomatonState mState;
 	char mCurrentChar;
+	Token mCurrentToken;
 };
 
