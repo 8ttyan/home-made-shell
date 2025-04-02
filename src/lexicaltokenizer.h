@@ -21,6 +21,8 @@ public:
 	bool operator ++ ();
 //	bool operator ++ (int);
 	Token operator * () const;
+	Token* operator ->();
+	const Token* operator ->() const;
 
 private:
 	Prompter& mTarget;

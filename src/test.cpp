@@ -4,6 +4,7 @@
 #include "prompter.h"
 #include "lexicaltokenizer.h"
 #include "token.h"
+#include "parser.h"
 
 Test::Test(const string& pMode)
 {
@@ -16,6 +17,10 @@ Test::Test(const string& pMode)
 	}
 	if ( mode=="token" || mode=="tokenizer" ) {
 		TestLexicalTokenizer();
+		return;
+	}
+	if ( mode=="parser" ) {
+		TestParser();
 		return;
 	}
 	printf("Unknown test mode '%s'\n", pMode.c_str());
@@ -39,6 +44,15 @@ void Test::TestLexicalTokenizer()
 			string type=TokenTypeToString( token.type() );
 			printf("(TokenType:%s) %s\n", type.c_str(), token.c_str());
 		}
+	}
+}
+void Test::TestParser()
+{
+	while (1) {
+		Prompter prompter(stdin,stdout);
+		LexicalTokenizer lt(prompter);
+		Parser parser;
+		parser.run(lt);
 	}
 }
 

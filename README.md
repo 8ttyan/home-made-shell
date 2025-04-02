@@ -247,10 +247,9 @@ The home-made-shell syntax is defined by following Extend Backus Naur From(EBNF)
 <Shell> ::= <Sentence> {(";"|"&") <Sentence> } [ <Comment> ]
 <Sentence> ::= <ProcessGroup> [ ("&&" | "||" ) <ProcessGroup> ]
 <ProcessGroup> ::= <Process> { "|" <Process> }
-<Process> ::= <Command> | ( "(" <Shell> ")" )
-<Command> ::= <Word> {<Word>} { <Redirection> | <Dup> }
+<Process> ::= (<Command> | "(" <Shell> ")") { (<Redirect> <Word>) | <Dup> }
+<Command> ::= <Word> {<Word>}
 <Word> ::= <CmdArgs> | <SignleQuate> | <DoubleQuate>
-<Redirection> ::= <Redirector> <Word>
 ```
 
 * `{}` is repeat 0 or more times.

@@ -67,4 +67,12 @@ Token LexicalTokenizer::operator * () const
 {
 	return mCurrentToken;
 }
+Token* LexicalTokenizer::operator ->()
+{
+	return &mCurrentToken;
+}
+const Token* LexicalTokenizer::operator ->() const
+{
+	return &mCurrentToken;
+}
 
