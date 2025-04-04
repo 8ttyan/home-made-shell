@@ -23,11 +23,13 @@ public:
 	Token operator * () const;
 	Token* operator ->();
 	const Token* operator ->() const;
+	bool valid() const;
 
 private:
 	Prompter& mTarget;
 	AutomatonState mState;
 	char mCurrentChar;
 	Token mCurrentToken;
+	bool mValid;
 };
 

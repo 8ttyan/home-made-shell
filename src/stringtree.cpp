@@ -2,7 +2,7 @@
 #include "stringtree.h"
 #include <cstring>
 
-#define D_SEPARATOR " | "
+#define D_SEPARATOR "|"
 
 StringTree::StringTree()
 : mMaxStringSize(0)
@@ -57,15 +57,18 @@ void StringTree::print()
 	updateMaxStringSize();
 	size_t maxDepth=depth();
 	for (size_t i=maxDepth; i>=1; i--) {
+		printf(D_SEPARATOR);
 		printAt(i);
+		printf(D_SEPARATOR);
 		printf("\n");
 	}
 }
 void print_centerd(const char* str, int width) {
 	int len=strlen(str);
-	int padding=(width-len)/2;
-	if ( padding>0 ) {
-		printf("%*s%s", padding,"",str);
+	int leftSpace=(width-len)/2;
+	if ( leftSpace>0 ) {
+		int rightSpace=width-len-leftSpace;
+		printf("%*s%s%*s", leftSpace,"",str,rightSpace,"");
 	} else {
 		printf("%s",str);
 	}
@@ -75,11 +78,12 @@ void StringTree::printAt(size_t pDepth) const
 	pDepth--;
 	if ( pDepth==0 ) {
 		print_centerd(mString.c_str(), maxStringSize());
+		//printf("%d",mMaxStringSize);
 		return;
 	}
 	bool first=true;
 	for (const auto& child : mChildren) {
-		if ( pDepth==1 && first==false ) {
+		if ( first==false ) {
 			printf(D_SEPARATOR);
 		}
 		first = false;
@@ -106,7 +110,7 @@ int StringTree::updateMaxStringSize()
 		total += child.updateMaxStringSize();
 	}
 	if ( mChildren.size()>0 ) {
-		total += (sizeof(D_SEPARATOR)-1) * (mChildren.size() - 1);
+		total += mChildren.size() - 1;
 	}
 	if ( total > mString.size() ) {
 		mMaxStringSize = total;

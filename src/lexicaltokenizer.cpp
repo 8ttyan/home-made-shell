@@ -6,6 +6,7 @@
 
 LexicalTokenizer::LexicalTokenizer(Prompter& pTarget)
 : mTarget(pTarget)
+, mValid(true)
 {
 	mState = AutomatonState::Init;
 	mCurrentChar = '\0';
@@ -22,18 +23,21 @@ const AutomatonTransition& getMatchedTransition(AutomatonState pState, char pC)
 
 bool LexicalTokenizer::operator >> (Token& pToken)
 {
-	bool ret = operator++();
+	operator++();
 	pToken = mCurrentToken;
+	return mValid;
 }
 
 bool LexicalTokenizer::operator ++ ()
 {
+	if ( mValid==false ) return false;
 	mCurrentToken.clear();
 	if ( mCurrentChar=='\0' ) {
 		mTarget >> mCurrentChar;
 	}
 	if ( mState==AutomatonState::Init && mCurrentChar=='\n' ) {
 		mCurrentChar = '\0';
+		mValid = false;
 		return false;
 	}
 	char prevChar='\0';
@@ -41,6 +45,7 @@ bool LexicalTokenizer::operator ++ ()
 		//printf("prev=%c cur=%c mCurrentToken=%s\n", prevChar, mCurrentChar, mCurrentToken.c_str());
 		AutomatonTransition trans = getMatchedTransition(mState,mCurrentChar);
 		if ( trans.currentState==AutomatonState::None ) {
+			mValid = false;
 			return false;
 		}
 		if ( prevChar!='\0' && trans.appendPrevChar ) {
@@ -74,5 +79,9 @@ Token* LexicalTokenizer::operator ->()
 const Token* LexicalTokenizer::operator ->() const
 {
 	return &mCurrentToken;
+}
+bool LexicalTokenizer::valid() const
+{
+	return mValid;
 }
 

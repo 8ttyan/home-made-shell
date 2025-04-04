@@ -244,15 +244,16 @@ where the expression `<foo>` is the token type correspond to EBNF described in t
 The home-made-shell syntax is defined by following Extend Backus Naur From(EBNF).
 
 ```EBNF
-<Shell> ::= <Sentence> {(";"|"&") <Sentence> } [ <Comment> ]
-<Sentence> ::= <ProcessGroup> [ ("&&" | "||" ) <ProcessGroup> ]
+<Shell> ::= (<Sentence>)+ [ <Comment> ]
+<Sentence> ::= <ProcessGroup> [ ("&&" | "||" ) <ProcessGroup> ] [";"|"&"]
 <ProcessGroup> ::= <Process> { "|" <Process> }
 <Process> ::= (<Command> | "(" <Shell> ")") { (<Redirect> <Word>) | <Dup> }
-<Command> ::= <Word> {<Word>}
+<Command> ::= (<Word>)+
 <Word> ::= <CmdArgs> | <SignleQuate> | <DoubleQuate>
 ```
 
-* `{}` is repeat 0 or more times.
-* `[]` is optional.
+* `{a}` : Repeat `a` 0 or more times.
+* `(a)+` : Repeat `a` 1 or more times.
+* `[a]` : `a` is optional.
 * `a|b` means a OR b.
 
