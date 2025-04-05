@@ -154,7 +154,8 @@ Final(((Final)))
 EoS[EoS<BR>#60;EoS#62;]
 Pipe[Pipe<BR>#60;Pipe#62;]
 OR[Or<BR>#60;Or#62;]
-SubShell[SubShell<BR>#60;SubShell#62;]
+SubShellBegin[SubShellBegin<BR>#60;SubShellBegin#62;]
+SubShellEnd[SubShellEnd<BR>#60;SubShellEnd#62;]
 BackGround[BackGround<BR>#60;BackGround#62;]
 And[And<BR>#60;And#62;]
 Write12[Write12<BR>#60;Redirect#62;]
@@ -163,7 +164,7 @@ Append[Append<BR>#60;Redirect#62;]
 Digit[Digit<BR>#60;Word#62;]
 Write[Write<BR>#60;Redirect#62;]
 Specify[Specify]
-Dup[Dup<BR>#60;Redirect#62;]
+Dup[Dup<BR>#60;Dup#62;]
 CmdArgs[CmdArgs<BR>#60;Word#62;]
 Escape[Escape]
 BeginSingleQuate[BeginSingleQuate]
@@ -184,8 +185,10 @@ Init --|--> Pipe
   Pipe --> Final
   Pipe -- | --> OR
     OR --> Final
-Init --()--> SubShell
-  SubShell--> Final
+Init --()--> SubShellBegin
+  SubShellBegin--> Final
+Init --()--> SubShellEnd
+  SubShellEnd--> Final
 Init --&--> BackGround
   BackGround --except &>--> Final
   BackGround --&--> And
@@ -244,7 +247,7 @@ where the expression `<foo>` is the token type correspond to EBNF described in t
 The home-made-shell syntax is defined by following Extend Backus Naur From(EBNF).
 
 ```EBNF
-<Line> ::= <Shell> [ <Comment> ]
+<Line> ::= [<Shell>] [ <Comment> ]
 <Shell> ::= <Sentence> {(";"|"&") <Sentence>} [";"|"&"]
 <Sentence> ::= <ProcessGroup> [ ("&&" | "||" ) <ProcessGroup> ]
 <ProcessGroup> ::= <Process> { "|" <Process> }

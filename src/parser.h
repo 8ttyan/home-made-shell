@@ -10,6 +10,7 @@ public:
 	Parser();
 	void run(LexicalTokenizer&);
 private:
+	void Line(LexicalTokenizer&, StringTree*);
 	void Shell(LexicalTokenizer&, StringTree*);
 	void Sentence(LexicalTokenizer&, StringTree*);
 	void ProcessGroup(LexicalTokenizer&, StringTree*);

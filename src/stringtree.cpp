@@ -66,7 +66,7 @@ void StringTree::print()
 void print_centerd(const char* str, int width) {
 	int len=strlen(str);
 	int leftSpace=(width-len)/2;
-	if ( leftSpace>0 ) {
+	if ( leftSpace>=0 ) {
 		int rightSpace=width-len-leftSpace;
 		printf("%*s%s%*s", leftSpace,"",str,rightSpace,"");
 	} else {

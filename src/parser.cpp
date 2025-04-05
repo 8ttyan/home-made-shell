@@ -10,8 +10,20 @@ void Parser::run(LexicalTokenizer& pTokenizer)
 {
 	if ( ++pTokenizer==false ) return;
 	StringTree shellST = "Parser";
-	Shell(pTokenizer, &shellST);
+	Line(pTokenizer, &shellST);
 	shellST.print();
+}
+void Parser::Line(LexicalTokenizer& pTokenizer, StringTree* pParentST)
+{
+	StringTree& myST=pParentST->push_back("<Line>");
+	if ( pTokenizer->type()!=TokenType::Comment ) {
+		Shell(pTokenizer,&myST);
+	}
+	if ( pTokenizer->type()==TokenType::Comment ) {
+		myST.push_back("<Comment>").push_back(*pTokenizer);
+		++pTokenizer;
+		return;
+	}
 }
 void Parser::Shell(LexicalTokenizer& pTokenizer, StringTree* pParentST)
 {
@@ -26,7 +38,9 @@ void Parser::Shell(LexicalTokenizer& pTokenizer, StringTree* pParentST)
 			++pTokenizer;
 		}
 		if ( pTokenizer->type()==TokenType::Comment ) {
-			myST.push_back("<Comment>");
+			break;
+		}
+		if ( pTokenizer->type()==TokenType::SubShellEnd ) {
 			break;
 		}
 		if ( pTokenizer.valid()==false ) break;
@@ -63,14 +77,15 @@ void Parser::ProcessGroup(LexicalTokenizer& pTokenizer, StringTree* pParentST)
 void Parser::Process(LexicalTokenizer& pTokenizer, StringTree* pParentST)
 {
 	StringTree& myST=pParentST->push_back("<Process>");
-	if ( pTokenizer->type()==TokenType::SubShell ) {
+	if ( pTokenizer->type()==TokenType::SubShellBegin ) {
 		myST.push_back("<SubShellBegin>");
 		++pTokenizer;
 		Shell(pTokenizer,&myST);
-		if ( pTokenizer->type()!=TokenType::SubShell ) {
+		if ( pTokenizer->type()!=TokenType::SubShellEnd ) {
 			printf("error");
 		} else {
 			myST.push_back("<SubShellEnd>");
+			++pTokenizer;
 		}
 	} else {
 		Command(pTokenizer,&myST);

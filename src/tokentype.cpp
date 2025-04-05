@@ -7,10 +7,12 @@ string TokenTypeToString(TokenType pToken)
 		case TokenType::EoS: return "EoS";
 		case TokenType::Pipe: return "Pipe";
 		case TokenType::Or: return "Or";
-		case TokenType::SubShell: return "SubShell";
+		case TokenType::SubShellBegin: return "SubShellBegin";
+		case TokenType::SubShellEnd: return "SubShellEnd";
 		case TokenType::BackGround: return "BackGround";
 		case TokenType::And: return "And";
 		case TokenType::Redirect: return "Redirect";
+		case TokenType::Dup: return "Dup";
 		case TokenType::Word: return "Word";
 		case TokenType::Comment: return "Comment";
 	}
