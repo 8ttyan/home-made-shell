@@ -5,17 +5,17 @@
 #define D_SEPARATOR "|"
 
 StringTree::StringTree()
-: mMaxStringSize(0)
+: mChildrenStringSize(0)
 {
 }
 StringTree::StringTree(const char* pCharacter)
-: mMaxStringSize(0)
+: mChildrenStringSize(0)
 {
 	mString = pCharacter;
 }
 StringTree::StringTree(const string& pString)
 : mString(pString)
-, mMaxStringSize(0)
+, mChildrenStringSize(0)
 {
 }
 StringTree& StringTree::push_back(const StringTree& pTree)
@@ -54,7 +54,7 @@ StringTree& StringTree::back()
 }
 void StringTree::print()
 {
-	updateMaxStringSize();
+	updateChildrenStringSize();
 	size_t maxDepth=depth();
 	for (size_t i=maxDepth; i>=1; i--) {
 		printf(D_SEPARATOR);
@@ -78,7 +78,7 @@ void StringTree::printAt(size_t pDepth) const
 	pDepth--;
 	if ( pDepth==0 ) {
 		print_centerd(mString.c_str(), maxStringSize());
-		//printf("%d",mMaxStringSize);
+		//printf("%d",mChildrenStringSize);
 		return;
 	}
 	if ( mChildren.size()==0 ) {
@@ -92,6 +92,10 @@ void StringTree::printAt(size_t pDepth) const
 		first = false;
 		child.printAt(pDepth);
 	}
+	int diff = mString.size()-mChildrenStringSize;
+	if ( diff>0 ) {
+		printf("%*s",diff,"");
+	}
 }
 size_t StringTree::depth() const
 {
@@ -104,21 +108,19 @@ size_t StringTree::depth() const
 }
 int StringTree::maxStringSize() const
 {
-	return mMaxStringSize;
+	if ( mString.size() > mChildrenStringSize ) {
+		return (int)mString.size();
+	}
+	return mChildrenStringSize;
 }
-int StringTree::updateMaxStringSize()
+int StringTree::updateChildrenStringSize()
 {
-	int total=0;
+	mChildrenStringSize=0;
 	for (auto& child : mChildren) {
-		total += child.updateMaxStringSize();
+		mChildrenStringSize += child.updateChildrenStringSize();
 	}
 	if ( mChildren.size()>0 ) {
-		total += mChildren.size() - 1;
+		mChildrenStringSize += mChildren.size() - 1;
 	}
-	if ( total > mString.size() ) {
-		mMaxStringSize = total;
-	} else {
-		mMaxStringSize = mString.size();
-	}
-	return mMaxStringSize;
+	return maxStringSize();
 }

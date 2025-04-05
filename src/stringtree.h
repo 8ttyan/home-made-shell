@@ -20,13 +20,13 @@ public:
 	void print();
 	size_t depth() const;
 	int maxStringSize() const;
-	int updateMaxStringSize();
+	int updateChildrenStringSize();
 private:
 	void printAt(size_t pDepth) const;
 
 private:
 	string mString;
 	list<StringTree> mChildren;
-	int mMaxStringSize;
+	int mChildrenStringSize;
 };
 
