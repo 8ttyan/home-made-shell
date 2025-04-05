@@ -21,7 +21,7 @@ StateTypeMapping StateTypeMap[] = {
 	{AutomatonState::Append, TokenType::Redirect},
 	{AutomatonState::Digit, TokenType::Word},
 	{AutomatonState::Write, TokenType::Redirect},
-	{AutomatonState::Dup, TokenType::Redirect},
+	{AutomatonState::Dup, TokenType::Dup},
 	{AutomatonState::CmdArgs, TokenType::Word},
 	{AutomatonState::EndSingleQuate, TokenType::Word},
 	{AutomatonState::EndDoubleQuate, TokenType::Word},

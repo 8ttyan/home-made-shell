@@ -13,7 +13,7 @@ private:
 	void Shell(LexicalTokenizer&, StringTree*);
 	void Sentence(LexicalTokenizer&, StringTree*);
 	void ProcessGroup(LexicalTokenizer&, StringTree*);
-//	void Process(LexicalTokenizer&, StringTree*);
-//	void Command(LexicalTokenizer&, StringTree*);
+	void Process(LexicalTokenizer&, StringTree*);
+	void Command(LexicalTokenizer&, StringTree*);
 };
 

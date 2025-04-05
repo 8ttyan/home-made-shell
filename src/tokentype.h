@@ -12,6 +12,7 @@ enum class TokenType {
 	BackGround,
 	And,
 	Redirect,
+	Dup,
 	Word,
 	Comment,
 };
