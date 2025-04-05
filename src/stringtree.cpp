@@ -83,6 +83,7 @@ void StringTree::printAt(size_t pDepth) const
 	}
 	if ( mChildren.size()==0 ) {
 		print_centerd("",maxStringSize());
+		return;
 	}
 	bool first=true;
 	for (const auto& child : mChildren) {
