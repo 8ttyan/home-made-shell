@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(Home-Made-Shell)
-add_executable(hsh 
+add_executable(hms
 main.cpp
 lexicaltokenizer.cpp
 parser.cpp

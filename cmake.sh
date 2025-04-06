@@ -4,5 +4,5 @@ cmake -S src -B build
 cd build
 make
 cd ..
-rm hsh
-cp build/hsh .
+rm hms 2>/dev/null
+cp build/hms .
