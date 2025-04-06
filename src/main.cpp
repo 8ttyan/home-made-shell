@@ -41,34 +41,6 @@ int main(int argc, const char *argv[])
 		parser.run(lt, &shell);
 		shell.exec();
 	}
-	exit(0);
-
-	char str[1024];
-	while (1) {
-		printf("home-made-shell> ");
-		if ( fgets(str,1024,stdin)==NULL ) break;
-		trim(str);
-		if ( strcmp(str,"exit")==0 ) {
-			break;
-		}
-		if ( strlen(str)==0 ) continue;
-		list<Process> procList;
-		Tokenizer tokenWithPipe(str,"|");
-		string command;
-		while ( tokenWithPipe >> command ) {
-			Process myProcess(command);
-			if ( procList.size()>0 ) {
-				procList.back().connectByPipe(myProcess);
-			}
-			procList.push_back(myProcess);
-		}
-		for (auto& proc : procList) {
-			proc.forkExec(0);
-		}
-		for (auto& proc : procList) {
-			proc.wait();
-		}
-	}
 	return 0;
 }
 
