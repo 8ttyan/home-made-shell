@@ -37,7 +37,7 @@ AutomatonTransition TransitionTable[] = {
 	{AutomatonState::Init, AutomatonState::EoS,   Match::OneOf,  ";", false},
 		{AutomatonState::EoS, AutomatonState::Final, Match::Except, "", true},
 	{AutomatonState::Init, AutomatonState::Pipe, Match::OneOf, "|", false},
-		{AutomatonState::Pipe, AutomatonState::Final, Match::Except, "", true},
+		{AutomatonState::Pipe, AutomatonState::Final, Match::Except, "|", true},
 		{AutomatonState::Pipe, AutomatonState::Or, Match::OneOf,   "|", true},
 			{AutomatonState::Or, AutomatonState::Final, Match::Except,   "", true},
 	{AutomatonState::Init, AutomatonState::SubShellBegin, Match::OneOf, "(", false},

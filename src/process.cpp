@@ -7,6 +7,15 @@
 #include "process.h"
 #include "tokenizer.h"
 
+Process::Process(const vector<string>& pArgs)
+: mPid(-1)
+, mStdinFd(STDIN_FILENO)
+, mStdoutFd(STDOUT_FILENO)
+, mStderrFd(STDERR_FILENO)
+{
+	mCommand = pArgs[0];
+	mArguments = pArgs;
+}
 Process::Process(const string& pCommand)
 : mPid(-1)
 , mStdinFd(STDIN_FILENO)
@@ -23,7 +32,18 @@ Process::Process(const string& pCommand)
 		mArguments.push_back(s);
 	}
 }
-
+Process::Process()
+: mPid(-1)
+, mStdinFd(STDIN_FILENO)
+, mStdoutFd(STDOUT_FILENO)
+, mStderrFd(STDERR_FILENO)
+{
+}
+void Process::setArgs(const vector<string>& pArgs)
+{
+	mCommand = pArgs[0];
+	mArguments = pArgs;
+}
 Process::~Process()
 {
 }
@@ -43,7 +63,7 @@ void Process::connectByPipe(Process& pNextProcess)
 	pNextProcess.mStdinFd = fd[PIPE_READING];
 }
 
-void Process::forkExec()
+pid_t Process::forkExec(pid_t pPGID)
 {
 //	printf("start %s\n",mCommand.c_str());
 	pid_t pid = fork();
@@ -73,12 +93,16 @@ void Process::forkExec()
 			dup2(mStderrFd,STDERR_FILENO);
 			close(mStderrFd);
 		}
-
+		// set ProcessGroupID(PGID)
+		if ( setpgid(0,pPGID)==-1 ) {
+			printf("Failed to set PGID\n");
+		}
 		char** argList = argumentsAsChars();
 		execvp(mCommand.c_str(),argList);
 		printf("Failed to exec %s\n", mCommand.c_str());
 		exit(0);
 	}
+	return pid;
 }
 
 char** Process::argumentsAsChars() const

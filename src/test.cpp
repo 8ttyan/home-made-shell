@@ -5,6 +5,7 @@
 #include "lexicaltokenizer.h"
 #include "token.h"
 #include "parser.h"
+#include "shell.h"
 
 Test::Test(const string& pMode)
 {
@@ -51,8 +52,9 @@ void Test::TestParser()
 	while (1) {
 		Prompter prompter(stdin,stdout);
 		LexicalTokenizer lt(prompter);
+		Shell shell;
 		Parser parser;
-		parser.run(lt);
+		parser.run(lt, &shell, true);
 	}
 }
 

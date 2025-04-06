@@ -5,11 +5,13 @@
 #include <string.h>
 #include <list>
 
-#include "process.h"
-#include "tokenizer.h"
-#include "prompter.h"
 #include "lexicaltokenizer.h"
+#include "parser.h"
+#include "process.h"
+#include "prompter.h"
+#include "shell.h"
 #include "test.h"
+#include "tokenizer.h"
 
 void trim(char str[])
 {
@@ -31,6 +33,15 @@ int main(int argc, const char *argv[])
 			exit(0);
 		}
 	}
+	while (1) {
+		Prompter prompter(stdin,stdout);
+		LexicalTokenizer lt(prompter);
+		Shell shell;
+		Parser parser;
+		parser.run(lt, &shell);
+		shell.exec();
+	}
+	exit(0);
 
 	char str[1024];
 	while (1) {
@@ -52,7 +63,7 @@ int main(int argc, const char *argv[])
 			procList.push_back(myProcess);
 		}
 		for (auto& proc : procList) {
-			proc.forkExec();
+			proc.forkExec(0);
 		}
 		for (auto& proc : procList) {
 			proc.wait();

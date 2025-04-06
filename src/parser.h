@@ -3,18 +3,23 @@
 using namespace std;
 #include "lexicaltokenizer.h"
 class StringTree;
+class Shell;
+class Sentence;
+class ProcessGroup;
+class Process;
 
 class Parser
 {
 public:
 	Parser();
-	void run(LexicalTokenizer&);
+	void run(LexicalTokenizer&, Shell*, bool pPrintTree=false);
 private:
-	void Line(LexicalTokenizer&, StringTree*);
-	void Shell(LexicalTokenizer&, StringTree*);
-	void Sentence(LexicalTokenizer&, StringTree*);
-	void ProcessGroup(LexicalTokenizer&, StringTree*);
-	void Process(LexicalTokenizer&, StringTree*);
-	void Command(LexicalTokenizer&, StringTree*);
+	void Line(LexicalTokenizer&, Shell*, StringTree*);
+	void _Shell(LexicalTokenizer&, Shell*, StringTree*);
+	void _Sentence(LexicalTokenizer&, Shell*, StringTree*);
+	void _ProcessGroup(LexicalTokenizer&, Sentence*, StringTree*);
+	void _Process(LexicalTokenizer&, ProcessGroup*, StringTree*);
+	void _Command(LexicalTokenizer&, Process*, StringTree*);
+private:
 };
 

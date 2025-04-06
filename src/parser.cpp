@@ -1,23 +1,27 @@
 #include "parser.h"
 #include "stringtree.h"
 #include "lexicaltokenizer.h"
+#include "shell.h"
+#include "sentence.h"
+#include "processgroup.h"
+#include "process.h"
 
 Parser::Parser()
 {
 }
 
-void Parser::run(LexicalTokenizer& pTokenizer)
+void Parser::run(LexicalTokenizer& pTokenizer, Shell* pShell, bool pPrintTree/*=false*/)
 {
 	if ( ++pTokenizer==false ) return;
 	StringTree shellST = "Parser";
-	Line(pTokenizer, &shellST);
-	shellST.print();
+	Line(pTokenizer, pShell, &shellST);
+	if (pPrintTree) shellST.print();
 }
-void Parser::Line(LexicalTokenizer& pTokenizer, StringTree* pParentST)
+void Parser::Line(LexicalTokenizer& pTokenizer, Shell* pShell, StringTree* pParentST)
 {
 	StringTree& myST=pParentST->push_back("<Line>");
 	if ( pTokenizer->type()!=TokenType::Comment ) {
-		Shell(pTokenizer,&myST);
+		_Shell(pTokenizer, pShell, &myST);
 	}
 	if ( pTokenizer->type()==TokenType::Comment ) {
 		myST.push_back("<Comment>").push_back(*pTokenizer);
@@ -25,15 +29,16 @@ void Parser::Line(LexicalTokenizer& pTokenizer, StringTree* pParentST)
 		return;
 	}
 }
-void Parser::Shell(LexicalTokenizer& pTokenizer, StringTree* pParentST)
+void Parser::_Shell(LexicalTokenizer& pTokenizer, Shell* pShell, StringTree* pParentST)
 {
 	StringTree& myST=pParentST->push_back("<Shell>");
 	while (1) {
-		Sentence(pTokenizer,&myST);
+		_Sentence(pTokenizer, pShell ,&myST);
 		if ( pTokenizer->type()==TokenType::EoS ) {
 			myST.push_back(";");
 			++pTokenizer;
 		} else if ( pTokenizer->type()==TokenType::BackGround ) {
+			pShell->back().setWaitType( Sentence::WaitType::BackGround );
 			myST.push_back("&");
 			++pTokenizer;
 		}
@@ -46,17 +51,20 @@ void Parser::Shell(LexicalTokenizer& pTokenizer, StringTree* pParentST)
 		if ( pTokenizer.valid()==false ) break;
 	}
 }
-void Parser::Sentence(LexicalTokenizer& pTokenizer, StringTree* pParentST)
+void Parser::_Sentence(LexicalTokenizer& pTokenizer, Shell* pShell, StringTree* pParentST)
 {
+	Sentence& sent=pShell->appendSentence();
 	StringTree& myST=pParentST->push_back("<Sentence>");
 	while (1) {
-		ProcessGroup(pTokenizer,&myST);
+		_ProcessGroup(pTokenizer, &sent, &myST);
 		if ( pTokenizer->type()==TokenType::And ) {
+			sent.appendCondition( Sentence::Condition::AND );
 			myST.push_back("&&");
 			++pTokenizer;
 			continue;
 		}
 		if ( pTokenizer->type()==TokenType::Or ) {
+			sent.appendCondition( Sentence::Condition::OR );
 			myST.push_back("||");
 			++pTokenizer;
 			continue;
@@ -64,23 +72,25 @@ void Parser::Sentence(LexicalTokenizer& pTokenizer, StringTree* pParentST)
 		break;
 	}
 }
-void Parser::ProcessGroup(LexicalTokenizer& pTokenizer, StringTree* pParentST)
+void Parser::_ProcessGroup(LexicalTokenizer& pTokenizer, Sentence* pSentence, StringTree* pParentST)
 {
+	ProcessGroup& pg=pSentence->appendProcessGroup();
 	StringTree& myST=pParentST->push_back("<ProcessGroup>");
 	while (1) {
-		Process(pTokenizer, &myST);
+		_Process(pTokenizer, &pg, &myST);
 		if ( pTokenizer->type()!=TokenType::Pipe ) break;
 		myST.push_back("<pipe>");
 		++pTokenizer;
 	}
 }
-void Parser::Process(LexicalTokenizer& pTokenizer, StringTree* pParentST)
+void Parser::_Process(LexicalTokenizer& pTokenizer, ProcessGroup* pPG, StringTree* pParentST)
 {
+	Process& proc = pPG->appendProcess();
 	StringTree& myST=pParentST->push_back("<Process>");
 	if ( pTokenizer->type()==TokenType::SubShellBegin ) {
 		myST.push_back("<SubShellBegin>");
 		++pTokenizer;
-		Shell(pTokenizer,&myST);
+		_Shell(pTokenizer,NULL,&myST);
 		if ( pTokenizer->type()!=TokenType::SubShellEnd ) {
 			printf("error");
 		} else {
@@ -88,7 +98,7 @@ void Parser::Process(LexicalTokenizer& pTokenizer, StringTree* pParentST)
 			++pTokenizer;
 		}
 	} else {
-		Command(pTokenizer,&myST);
+		_Command(pTokenizer, &proc, &myST);
 	}
 	while ( pTokenizer->type()==TokenType::Redirect || pTokenizer->type()==TokenType::Dup ) {
 		if ( pTokenizer->type()==TokenType::Redirect ) {
@@ -102,13 +112,16 @@ void Parser::Process(LexicalTokenizer& pTokenizer, StringTree* pParentST)
 		}
 	}
 }
-void Parser::Command(LexicalTokenizer& pTokenizer, StringTree* pParentST)
+void Parser::_Command(LexicalTokenizer& pTokenizer, Process* pProc, StringTree* pParentST)
 {
+	vector<string> args;
 	StringTree& myST=pParentST->push_back("<Command>");
 	do {
+		args.push_back(*pTokenizer);
 		StringTree& word = myST.push_back("<Word>");
 		word.push_back(*pTokenizer);
 		++pTokenizer;
 	} while ( pTokenizer->type()==TokenType::Word );
+	pProc->setArgs(args);
 }
 
