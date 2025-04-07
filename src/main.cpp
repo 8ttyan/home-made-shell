@@ -38,7 +38,10 @@ int main(int argc, const char *argv[])
 		LexicalTokenizer lt(prompter);
 		Shell shell;
 		Parser parser;
-		parser.run(lt, &shell);
+		if ( parser.run(lt,&shell)==false ) {
+			printf("parser error\n");
+			continue;
+		}
 		shell.exec();
 	}
 	return 0;

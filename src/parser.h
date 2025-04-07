@@ -12,14 +12,14 @@ class Parser
 {
 public:
 	Parser();
-	void run(LexicalTokenizer&, Shell*, bool pPrintTree=false);
+	bool run(LexicalTokenizer&, Shell*, bool pPrintTree=false);
 private:
-	void Line(LexicalTokenizer&, Shell*, StringTree*);
-	void _Shell(LexicalTokenizer&, Shell*, StringTree*);
-	void _Sentence(LexicalTokenizer&, Shell*, StringTree*);
-	void _ProcessGroup(LexicalTokenizer&, Sentence*, StringTree*);
-	void _Process(LexicalTokenizer&, ProcessGroup*, StringTree*);
-	void _Command(LexicalTokenizer&, Process*, StringTree*);
+	bool Line(LexicalTokenizer&, Shell*, StringTree*);
+	bool _Shell(LexicalTokenizer&, Shell*, StringTree*);
+	bool _Sentence(LexicalTokenizer&, Shell*, StringTree*);
+	bool _ProcessGroup(LexicalTokenizer&, Sentence*, StringTree*);
+	bool _Process(LexicalTokenizer&, ProcessGroup*, StringTree*);
+	bool _Command(LexicalTokenizer&, Process*, StringTree*);
 private:
 };
 
