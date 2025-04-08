@@ -20,6 +20,9 @@ public:
 	int wait();
 	int getPid() const;
 
+	// shell built-in commands
+	bool runBuiltInCommands();
+
 private:
 	char** argumentsAsChars() const;
 

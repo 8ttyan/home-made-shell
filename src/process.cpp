@@ -41,6 +41,7 @@ Process::Process()
 }
 void Process::setArgs(const vector<string>& pArgs)
 {
+	if ( pArgs.size()==0 ) return;
 	mCommand = pArgs[0];
 	mArguments = pArgs;
 }
@@ -66,6 +67,7 @@ void Process::connectByPipe(Process& pNextProcess)
 pid_t Process::forkExec(pid_t pPGID)
 {
 //	printf("start %s\n",mCommand.c_str());
+	if ( runBuiltInCommands() ) return 0;
 	pid_t pid = fork();
 	if ( pid<0 ) {	// fork error
 		printf("failed to exec process %s\n", mCommand.c_str());
@@ -103,6 +105,29 @@ pid_t Process::forkExec(pid_t pPGID)
 		exit(0);
 	}
 	return pid;
+}
+
+bool Process::runBuiltInCommands()
+{
+	if ( mCommand=="cd" ) {
+		if ( mArguments.size()<=1 ) return true;
+		chdir(mArguments[1].c_str());
+		return true;
+	}
+	if ( mCommand=="exit" ) {
+		int status=0;
+		if ( mArguments.size()>=2 ) {
+			try {
+				status = std::stoi(mArguments[1]);
+			} catch (...) {
+				// nothing to do
+			}
+		}
+		//printf("exit %d\n",status);
+		exit(status);
+		return true;
+	}
+	return false;
 }
 
 char** Process::argumentsAsChars() const
