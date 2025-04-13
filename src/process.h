@@ -3,9 +3,16 @@
 #include <sys/types.h>
 #include <vector>
 #include <string>
+#include <array>
 #include <unistd.h> // for pid_t
 
 using namespace std;
+enum class DUPLICATE
+{
+	NONE,
+	STDOUT_TO_STDERR,
+	STDERR_TO_STDOUT,
+};
 
 class Process
 {
@@ -15,8 +22,9 @@ public:
 	Process();
 	~Process();
 	void setArgs(const vector<string>& pArgs);
-	void connectByPipe(Process&);
-	pid_t forkExec(pid_t pPGID);
+	void redirect(int pFileNo, const string pToFile, bool pAppend);
+	void duplicate(DUPLICATE);
+	pid_t forkExec(pid_t pPGID, int pStdinFN, int pStdoutFN);
 	int wait();
 	int getPid() const;
 
@@ -30,8 +38,8 @@ private:
 	pid_t mPid;
 	string mCommand;
 	vector<string> mArguments;
-	int mStdinFd;
-	int mStdoutFd;
-	int mStderrFd;
+	array<string,3> mRedirectDestFile;
+	array<bool,3> mRedirectAppendFlg;
+	DUPLICATE mDuplicate;
 };
 

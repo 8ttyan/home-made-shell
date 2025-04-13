@@ -106,12 +106,29 @@ bool Parser::_Process(LexicalTokenizer& pTokenizer, ProcessGroup* pPG, StringTre
 	}
 	while ( pTokenizer->type()==TokenType::Redirect || pTokenizer->type()==TokenType::Dup ) {
 		if ( pTokenizer->type()==TokenType::Redirect ) {
+			int fileNo = STDOUT_FILENO;
+			bool appendFlg = false;
+			if ( *pTokenizer=="<" )  { fileNo=STDIN_FILENO;  appendFlg=false; }
+			if ( *pTokenizer==">" )  { fileNo=STDOUT_FILENO; appendFlg=false; }
+			if ( *pTokenizer=="1>" ) { fileNo=STDOUT_FILENO; appendFlg=false; }
+			if ( *pTokenizer=="2>" ) { fileNo=STDERR_FILENO; appendFlg=false; }
+			//if ( *pTokenizer=="<" )  { fileNo=STDIN_FILENO;  appendFlg=false; } // here document
+			if ( *pTokenizer==">>" )  { fileNo=STDOUT_FILENO; appendFlg=true; }
+			if ( *pTokenizer=="1>>" ) { fileNo=STDOUT_FILENO; appendFlg=true; }
+			if ( *pTokenizer=="2>>" ) { fileNo=STDERR_FILENO; appendFlg=true; }
 			myST.push_back("<Redirect>").push_back(*pTokenizer);
 			++pTokenizer;
 			myST.push_back("<Word>").push_back(*pTokenizer);
+			string filePath = *pTokenizer;
 			++pTokenizer;
+			proc.redirect(fileNo, filePath, appendFlg);
 		} else {
 			myST.push_back("<Dup>").push_back(*pTokenizer);
+			DUPLICATE dup=DUPLICATE::NONE;
+			if ( *pTokenizer==">&2" ) dup=DUPLICATE::STDERR_TO_STDOUT;
+			if ( *pTokenizer=="1>&2" ) dup=DUPLICATE::STDERR_TO_STDOUT;
+			if ( *pTokenizer=="2>&1" ) dup=DUPLICATE::STDOUT_TO_STDERR;
+			proc.duplicate(dup);
 			++pTokenizer;
 		}
 	}

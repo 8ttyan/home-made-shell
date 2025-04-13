@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <fcntl.h> // for L_RDONLY,L_WRONLY
 #include <sys/wait.h>
 #include <string.h>
 #include <sstream>
@@ -9,18 +10,12 @@
 
 Process::Process(const vector<string>& pArgs)
 : mPid(-1)
-, mStdinFd(STDIN_FILENO)
-, mStdoutFd(STDOUT_FILENO)
-, mStderrFd(STDERR_FILENO)
 {
 	mCommand = pArgs[0];
 	mArguments = pArgs;
 }
 Process::Process(const string& pCommand)
 : mPid(-1)
-, mStdinFd(STDIN_FILENO)
-, mStdoutFd(STDOUT_FILENO)
-, mStderrFd(STDERR_FILENO)
 {
 //	printf("Process %s\n", pCommand.c_str());
 	Tokenizer tokens(pCommand, " ");
@@ -34,9 +29,6 @@ Process::Process(const string& pCommand)
 }
 Process::Process()
 : mPid(-1)
-, mStdinFd(STDIN_FILENO)
-, mStdoutFd(STDOUT_FILENO)
-, mStderrFd(STDERR_FILENO)
 {
 }
 void Process::setArgs(const vector<string>& pArgs)
@@ -45,26 +37,20 @@ void Process::setArgs(const vector<string>& pArgs)
 	mCommand = pArgs[0];
 	mArguments = pArgs;
 }
+void Process::redirect(int pFileNo, const string pToFile, bool pAppend)
+{
+	mRedirectDestFile[pFileNo] = pToFile;
+	mRedirectAppendFlg[pFileNo] = pAppend;
+}
+void Process::duplicate(DUPLICATE pDuplicate)
+{
+	mDuplicate = pDuplicate;
+}
 Process::~Process()
 {
 }
 
-// The system-call pipe(int fd[2]) return two file descriptors.
-// The first element of int fd[2] is descriptor for reading, the second is writing.
-#define PIPE_READING 0
-#define PIPE_WRITING 1
-
-void Process::connectByPipe(Process& pNextProcess)
-{
-	int fd[2];
-	if ( pipe(fd)!=0 ) {
-		printf("failed to create pipe\n");
-	}
-	mStdoutFd = fd[PIPE_WRITING];
-	pNextProcess.mStdinFd = fd[PIPE_READING];
-}
-
-pid_t Process::forkExec(pid_t pPGID)
+pid_t Process::forkExec(pid_t pPGID, int pStdinFN, int pStdoutFN)
 {
 //	printf("start %s\n",mCommand.c_str());
 	if ( runBuiltInCommands() ) return 0;
@@ -73,27 +59,57 @@ pid_t Process::forkExec(pid_t pPGID)
 		printf("failed to exec process %s\n", mCommand.c_str());
 	} else if ( pid>0 ) {	// parent process
 		mPid = pid;
-		if ( mStdinFd!=STDIN_FILENO ) close(mStdinFd);
-		if ( mStdoutFd!=STDOUT_FILENO ) close(mStdoutFd);
-		if ( mStderrFd!=STDERR_FILENO ) close(mStderrFd);
 	} else {				// child process
 		// connect pipe
-		if ( mStdinFd!=STDIN_FILENO ) {
+		if ( pStdinFN!=STDIN_FILENO ) {
 			//printf("%s: change stdin\n", mCommand.c_str());
 			close(STDIN_FILENO);
-			dup2(mStdinFd,STDIN_FILENO);
-			close(mStdinFd);
+			dup2(pStdinFN,STDIN_FILENO);
+			close(pStdinFN);
 		}
-		if ( mStdoutFd!=STDOUT_FILENO ) {
+		if ( pStdoutFN!=STDOUT_FILENO ) {
 			//printf("%s: change stdout\n", mCommand.c_str());
 			close(STDOUT_FILENO);
-			dup2(mStdoutFd,STDOUT_FILENO);
-			close(mStdoutFd);
+			dup2(pStdoutFN,STDOUT_FILENO);
+			close(pStdoutFN);
 		}
-		if ( mStderrFd!=STDERR_FILENO ) {
+		if ( mRedirectDestFile[STDIN_FILENO].empty()==false ) {
+			int fd = open(mRedirectDestFile[STDIN_FILENO].c_str(), O_RDONLY);
+			if ( fd==-1 ) {
+				printf("No such file %s\n", mRedirectDestFile[STDIN_FILENO].c_str());
+				exit(0);
+			}
+			close(STDIN_FILENO);
+			dup2(fd, STDIN_FILENO);
+		}
+		if ( mRedirectDestFile[STDOUT_FILENO].empty()==false ) {
+			int opt = 0;
+			if ( mRedirectAppendFlg[STDOUT_FILENO] ) opt=O_APPEND;
+			int fd = open(mRedirectDestFile[STDOUT_FILENO].c_str(), O_WRONLY|O_CREAT|opt, 0666);
+			if ( fd==-1 ) {
+				printf("Failed to open file %s\n", mRedirectDestFile[STDOUT_FILENO].c_str());
+				exit(0);
+			}
+			close(STDOUT_FILENO);
+			dup2(fd, STDOUT_FILENO);
+		}
+		if ( mRedirectDestFile[STDERR_FILENO].empty()==false ) {
+			int opt = 0;
+			if ( mRedirectAppendFlg[STDOUT_FILENO] ) opt=O_APPEND;
+			int fd = open(mRedirectDestFile[STDERR_FILENO].c_str(), O_WRONLY|O_CREAT|opt, 0666);
+			if ( fd==-1 ) {
+				printf("Failed to open file %s\n", mRedirectDestFile[STDERR_FILENO].c_str());
+				exit(0);
+			}
 			close(STDERR_FILENO);
-			dup2(mStderrFd,STDERR_FILENO);
-			close(mStderrFd);
+			dup2(fd, STDERR_FILENO);
+		}
+		if ( mDuplicate==DUPLICATE::STDERR_TO_STDOUT ) {
+			close(STDOUT_FILENO);
+			dup2(STDERR_FILENO, STDOUT_FILENO);
+		} else if ( mDuplicate==DUPLICATE::STDOUT_TO_STDERR ) {
+			close(STDERR_FILENO);
+			dup2(STDOUT_FILENO, STDERR_FILENO);
 		}
 		// set ProcessGroupID(PGID)
 		if ( setpgid(0,pPGID)==-1 ) {
