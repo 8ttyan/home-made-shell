@@ -1,21 +1,25 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <signal.h>
 
 #include "prompter.h"
 
-Prompter::Prompter(FILE* pStdinFp, FILE* pStdoutFp)
+Prompter::Prompter()
 {
-	mStdinFp = pStdinFp;
-	mStdoutFp = pStdoutFp;
+	mStdinFp = stdin;
+	mStdoutFp = stdout;
 	mBuf[0] = '\0';
 	mPos = 0;
 	mFirst = true;
-
+	setSignalHandler();
+}
+void Prompter::newLine()
+{
 	fprintf(mStdoutFp,"home-made-shell> ");
 	fflush(mStdoutFp);
+	mFirst = true;
 }
-
 bool Prompter::operator >> (char& c)
 {
 	c = mBuf[mPos++];
@@ -31,5 +35,19 @@ bool Prompter::operator >> (char& c)
 		c = mBuf[mPos++];
 	}
 	return true;
+}
+
+void signalHandler(int signo)
+{
+	// nothing to do
+}
+
+void Prompter::setSignalHandler()
+{
+	struct sigaction act = {0};
+	act.sa_handler = signalHandler;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+	sigaction(SIGINT, &act, NULL);
 }
 

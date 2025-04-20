@@ -34,8 +34,8 @@ int main(int argc, const char *argv[])
 		}
 	}
 	while (1) {
-		Prompter prompter(stdin,stdout);
-		LexicalTokenizer lt(prompter);
+		Prompter::getInstance().newLine();
+		LexicalTokenizer lt(Prompter::getInstance());
 		Shell shell;
 		Parser parser;
 		if ( parser.run(lt,&shell)==false ) {

@@ -12,9 +12,19 @@
 class Prompter
 {
 public:
-	Prompter(FILE* pStdinFp, FILE* pStdoutFp);
-	bool operator >> (char& c);
+	static Prompter& getInstance()
+	{
+		static Prompter __instance;
+		return __instance;
+	};
+	Prompter(const Prompter&) = delete;
+	Prompter& operator=(const Prompter&) = delete;
+	void newLine();
+	bool operator >> (char& c);	//!< get character from stdin
 
+private:
+	Prompter();	// singleton
+	void setSignalHandler();
 private:
 	FILE* mStdinFp;
 	FILE* mStdoutFp;

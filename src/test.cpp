@@ -29,7 +29,7 @@ Test::Test(const string& pMode)
 
 void Test::TestPrompter()
 {
-	Prompter prompter(stdin,stdout);
+	Prompter& prompter = Prompter::getInstance();
 	char c;
 	while ( prompter>>c ) {
 		printf("char: %c\n",c);
@@ -38,8 +38,7 @@ void Test::TestPrompter()
 void Test::TestLexicalTokenizer()
 {
 	while (1) {
-		Prompter prompter(stdin,stdout);
-		LexicalTokenizer lt(prompter);
+		LexicalTokenizer lt( Prompter::getInstance() );
 		Token token;
 		while ( lt>>token ) {
 			string type=TokenTypeToString( token.type() );
@@ -50,8 +49,7 @@ void Test::TestLexicalTokenizer()
 void Test::TestParser()
 {
 	while (1) {
-		Prompter prompter(stdin,stdout);
-		LexicalTokenizer lt(prompter);
+		LexicalTokenizer lt( Prompter::getInstance() );
 		Shell shell;
 		Parser parser;
 		parser.run(lt, &shell, true);

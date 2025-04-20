@@ -34,6 +34,7 @@ int ProcessGroup::execAndWait()
 		stdinFN = nextStdInFN;
 		if ( pgid==0 ) pgid=pid;
 	}
+	//tcsetpgrp(STDIN_FILENO,pgid); // to interupt process by ctrl-c.
 	int status=0;
 	for (auto& proc : mProcessList) {
 		status = proc.wait();
