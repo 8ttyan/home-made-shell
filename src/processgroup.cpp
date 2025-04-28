@@ -1,5 +1,7 @@
 
 #include "processgroup.h"
+#include <termios.h>
+#include <signal.h>
 
 ProcessGroup::ProcessGroup()
 {
@@ -17,6 +19,15 @@ Process& ProcessGroup::appendProcess()
 
 int ProcessGroup::execAndWait()
 {
+
+	// save terminal settings
+	pid_t myPgid = getpgrp();
+	struct termios shell_tmodes;
+	signal(SIGTTOU, SIG_IGN);
+	tcsetpgrp(STDIN_FILENO, myPgid);
+	signal(SIGTTOU, SIG_DFL);
+	tcgetattr(STDIN_FILENO, &shell_tmodes);
+
 	int pgid=0;	// Process Group ID (is equal to first process's PID.)
 	int stdinFN=STDIN_FILENO;
 	for (auto& proc : mProcessList) {
@@ -34,11 +45,15 @@ int ProcessGroup::execAndWait()
 		stdinFN = nextStdInFN;
 		if ( pgid==0 ) pgid=pid;
 	}
-	//tcsetpgrp(STDIN_FILENO,pgid); // to interupt process by ctrl-c.
 	int status=0;
 	for (auto& proc : mProcessList) {
 		status = proc.wait();
 	}
+	// revert terminal settings
+	signal(SIGTTOU, SIG_IGN);
+	tcsetpgrp(STDIN_FILENO,myPgid);
+	signal(SIGTTOU, SIG_DFL);
+	tcsetattr(STDIN_FILENO,TCSADRAIN,&shell_tmodes);
 	return status;
 }
 

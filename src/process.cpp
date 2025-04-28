@@ -59,6 +59,10 @@ pid_t Process::forkExec(pid_t pPGID, int pStdinFN, int pStdoutFN)
 		printf("failed to exec process %s\n", mCommand.c_str());
 	} else if ( pid>0 ) {	// parent process
 		mPid = pid;
+		// set ProcessGroupID(PGID)
+		if ( setpgid(pid,pPGID)==-1 ) {
+			printf("Failed to set PGID\n");
+		}
 	} else {				// child process
 		// connect pipe
 		if ( pStdinFN!=STDIN_FILENO ) {
@@ -114,6 +118,13 @@ pid_t Process::forkExec(pid_t pPGID, int pStdinFN, int pStdoutFN)
 		// set ProcessGroupID(PGID)
 		if ( setpgid(0,pPGID)==-1 ) {
 			printf("Failed to set PGID\n");
+		}
+		if ( getpid()==getpgrp() ) {
+			signal(SIGTTOU, SIG_IGN);
+			if ( tcsetpgrp(STDIN_FILENO,getpgrp())==-1 ) { // to interupt process by ctrl-c.
+				printf("failed to tcsetpgrp\n");
+			}
+			signal(SIGTTOU, SIG_DFL);
 		}
 		char** argList = argumentsAsChars();
 		execvp(mCommand.c_str(),argList);
